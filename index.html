@@ -23,41 +23,32 @@
         .photo-upload { margin-top: 10px; background: #fff; border: 1px dashed #bbb; padding: 8px; border-radius: 4px; }
         .photo-preview { max-width: 100%; max-height: 150px; margin-top: 5px; display: none; border-radius: 4px; border: 1px solid #ddd; }
         .sig-container { border: 1px dashed #666; background: #fff; margin-bottom: 5px; border-radius: 4px; }
-        canvas { width: 100%; height: 120px; display: block; touch-action: none; }
+        canvas { width: 100%; height: 120px; display: block; touch-action: none; background: #fff; }
         .btn-clear { background: #6c757d; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; }
-        .submit-btn { background: var(--success-color); color: white; border: none; width: 100%; padding: 14px; font-size: 1.1rem; font-weight: bold; border-radius: 6px; margin-top: 25px; cursor: pointer; }
+        .submit-btn { background: var(--success-color); color: white; border: none; width: 100%; padding: 14px; font-size: 1.1rem; font-weight: bold; border-radius: 6px; margin-top: 25px; cursor: pointer; display: block; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
         /* 預設隱藏 PDF Word 表格排版，只有列印時才開啟 */
         #word-print-layout { display: none; }
 
-        /* ==================== 2. 關鍵：PDF Word 完美還原排版樣式 (Print) ==================== */
+        /* ==================== 2. PDF Word 完美還原排版樣式 (Print) ==================== */
         @media print {
-            /* 隱藏手機操作版面的所有元素 */
             body { background: #fff; padding: 0; margin: 0; font-size: 11pt; color: #000; }
             .container { display: none !important; }
-            
-            /* 顯示 Word 原生排版 */
             #word-print-layout { display: block !important; width: 100%; }
             .print-title { text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 2px; font-family: "標楷體", STKaiti, serif; }
             .print-no { text-align: right; font-size: 10pt; margin-bottom: 5px; }
-            
-            /* 精準還原 Word 表格線條與框線 */
             table.word-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; }
             table.word-table th, table.word-table td { border: 1px solid #000; padding: 6px; font-size: 10pt; text-align: left; vertical-align: middle; word-wrap: break-word; }
             .text-center { text-align: center !important; }
             .bg-gray { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            
-            /* 簽名欄位排版 */
-            .sig-row { display: flex; justify-content: space-between; margin-top: 10px; font-size: 11pt; font-weight: bold; }
-            .sig-box-print { width: 45%; border-bottom: 1px solid #000; height: 60px; display: inline-block; vertical-align: bottom; }
-            .sig-img-print { max-height: 55px; display: block; margin: 0 auto; }
-
-            /* 分頁控制：防止表格與照片在不對的地方斷開 */
+            .sig-row { display: flex; justify-content: space-between; margin-top: 15px; font-size: 11pt; font-weight: bold; }
+            .sig-box-print { width: 45%; border-bottom: 1px solid #000; height: 60px; display: inline-block; vertical-align: bottom; position: relative; }
+            .sig-img-print { max-height: 55px; max-width: 100%; display: block; margin: 0 auto; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); }
             .page-break { page-break-before: always; }
             .photo-report-title { font-size: 14pt; font-weight: bold; margin: 15px 0 5px 0; text-align: center; }
-            .photo-grid-table { width: 100%; border-collapse: collapse; }
-            .photo-grid-table td { border: 1px solid #000; padding: 8px; vertical-align: top; width: 50%; }
-            .print-photo-img { width: 100%; max-height: 220px; object-fit: contain; display: block; margin: 5px auto; }
+            .photo-grid-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+            .photo-grid-table td { border: 1px solid #000; padding: 8px; vertical-align: top; width: 50%; height: 280px; }
+            .print-photo-img { width: 100%; max-height: 200px; object-fit: contain; display: block; margin: 5px auto; }
         }
     </style>
 </head>
@@ -78,7 +69,7 @@
     <div class="card">
         <div class="card-title">施工前：進場堆置及完成加工之堆置</div>
         <div class="card-standard">標準：進場鋼筋必須墊高至少10cm以上，防止鋼筋污染及銹蝕。</div>
-        <input type="text" id="ui_val_b1" placeholder="填寫實際情形 (空白代表無此項)">
+        <input type="text" id="ui_val_b1" placeholder="填寫實際情形 (空白代表無此項)" value="">
     </div>
 
     <div class="card">
@@ -92,8 +83,8 @@
         <div class="card-standard">標準：D____@____cm (各間距允差值：最小間距-6mm)</div>
         <input type="text" id="ui_val_d2" value="主筋 74cm內 6支(平均14.8cm)；副筋 59cm內 5支(平均14.8cm)">
         <div class="photo-upload">
-            <label>📷 拍照：主筋/副筋間距照片</label>
-            <input type="file" accept="image/*" capture="environment" onchange="previewImage(this, 'p_d2')">
+            <label>📷 選擇相片/拍照：主筋/副筋間距照片</label>
+            <input type="file" accept="image/*" onchange="previewImage(this, 'p_d2')">
             <img id="p_d2" class="photo-preview">
         </div>
     </div>
@@ -102,8 +93,8 @@
         <div class="card-title">施工中 3：鋼筋綁紮</div>
         <div class="card-standard">標準：以鐵絲加固，鋼筋綁紮是否牢固無脫落。</div>
         <div class="radio-group" style="margin-bottom:6px;">
-            <label><input type="checkbox" id="ui_bind1" checked> 逐步綁紮(≧20cm)</label>
-            <label><input type="checkbox" id="ui_bind2"> 跳步綁紮(<20cm)</label>
+            <label><input type="checkbox" id="ui_bind1" checked> 逐步綁紮(鋼筋間隔≧20cm)</label>
+            <label><input type="checkbox" id="ui_bind2"> 跳步綁紮(鋼筋間隔&lt;20cm)</label>
         </div>
         <input type="text" id="ui_val_d3" value="鐵絲紮實牢固，無鬆脫現象">
     </div>
@@ -113,8 +104,8 @@
         <div class="card-standard">標準：一般為5cm+0.6cm / 與土壤接觸者7.5cm+0.6cm</div>
         <input type="text" id="ui_val_d4" value="現場量測 5.1 cm">
         <div class="photo-upload">
-            <label>📷 拍照：保護層量測照片</label>
-            <input type="file" accept="image/*" capture="environment" onchange="previewImage(this, 'p_d4')">
+            <label>📷 選擇相片/拍照：保護層量測照片</label>
+            <input type="file" accept="image/*" onchange="previewImage(this, 'p_d4')">
             <img id="p_d4" class="photo-preview">
         </div>
     </div>
@@ -124,8 +115,8 @@
         <div class="card-standard">標準：D10≦60cm、D13≦80cm、D16≦100cm。墊塊強度須大於混凝土。</div>
         <input type="text" id="ui_val_d5" value="墊塊間距 75cm(量測)">
         <div class="photo-upload">
-            <label>📷 拍照：鋼筋墊塊配置照片</label>
-            <input type="file" accept="image/*" capture="environment" onchange="previewImage(this, 'p_d5')">
+            <label>📷 選擇相片/拍照：鋼筋墊塊配置照片</label>
+            <input type="file" accept="image/*" onchange="previewImage(this, 'p_d5')">
             <img id="p_d5" class="photo-preview">
         </div>
     </div>
@@ -135,8 +126,8 @@
         <div class="card-standard">標準：D10≧40cm、D13≧52cm、D16≧64cm。同一斷面不超過1/2。</div>
         <input type="text" id="ui_val_d6" value="D13搭接長度符合規範">
         <div class="photo-upload">
-            <label>📷 拍照：搭接長度量測照片</label>
-            <input type="file" accept="image/*" capture="environment" onchange="previewImage(this, 'p_d6')">
+            <label>📷 選擇相片/拍照：搭接長度量測照片</label>
+            <input type="file" accept="image/*" onchange="previewImage(this, 'p_d6')">
             <img id="p_d6" class="photo-preview">
         </div>
     </div>
@@ -146,21 +137,21 @@
         <div class="card-standard">標準：側溝蓋兩側 2-D13 L=(依設計圖說) 設置角落四邊</div>
         <input type="text" id="ui_val_d7" value="側溝蓋開口四角已綁紮補強筋">
         <div class="photo-upload">
-            <label>📷 拍照：開口補強照片 1</label>
-            <input type="file" accept="image/*" capture="environment" onchange="previewImage(this, 'p_d7_1')">
+            <label>📷 選擇相片/拍照：開口補強照片 1</label>
+            <input type="file" accept="image/*" onchange="previewImage(this, 'p_d7_1')">
             <img id="p_d7_1" class="photo-preview">
         </div>
         <div class="photo-upload" style="margin-top:5px;">
-            <label>📷 拍照：開口補強照片 2</label>
-            <input type="file" accept="image/*" capture="environment" onchange="previewImage(this, 'p_d7_2')">
+            <label>📷 選擇相片/拍照：開口補強照片 2</label>
+            <input type="file" accept="image/*" onchange="previewImage(this, 'p_d7_2')">
             <img id="p_d7_2" class="photo-preview">
         </div>
     </div>
 
     <div class="card">
         <div class="card-title">施工後：平直度與表面處理</div>
-        <input type="text" id="ui_val_a1" placeholder="平直度實際情形 (空白代表無此項)">
-        <input type="text" id="ui_val_a2" placeholder="表面處理實際情形 (空白代表無此項)" style="margin-top:5px;">
+        <input type="text" id="ui_val_a1" placeholder="平直度實際情形 (空白代表無此項)" value="">
+        <input type="text" id="ui_val_a2" placeholder="表面處理實際情形 (空白代表無此項)" style="margin-top:5px;" value="">
     </div>
 
     <div class="section-title">監造簽認</div>
@@ -202,7 +193,7 @@
         <tr>
             <td class="bg-gray text-center">抽查位置</td>
             <td id="td_location"></td>
-            <td class="bg-gray text-center" style="width:12%;">抽查日期</td>
+            <td class="bg-gray text-center">抽查日期</td>
             <td colspan="2" id="td_date"></td>
         </tr>
         <tr>
@@ -248,7 +239,7 @@
         <tr>
             <td>鋼筋綁紮</td>
             <td>以鐵絲加固，鋼筋綁紮是否牢固無脫落。<br>
-                <span id="p_chk_bind1">□</span>逐步綁紮(≧20cm) <span id="p_chk_bind2">□</span>跳步綁紮(<20cm)
+                <span id="p_chk_bind1">□</span>逐步綁紮(鋼筋間隔&gt;=20cm) <span id="p_chk_bind2">□</span>跳步綁紮(鋼筋間隔&lt;20cm)
             </td>
             <td id="t_val_d3"></td>
             <td class="text-center" id="t_res_d3"></td>
@@ -261,7 +252,7 @@
         </tr>
         <tr>
             <td>鋼筋墊塊</td>
-            <td>D10鋼筋≦60cm、D13鋼筋≦80cm、D16鋼筋≦100cm。水泥砂漿墊塊之強度須大於所澆置混凝土。</td>
+            <td>D10鋼筋≦60cm、D13鋼筋≦80cm、D16鋼筋≦100cm。水泥砂漿墊塊之強度須大於所澆置混凝土之強度。</td>
             <td id="t_val_d5"></td>
             <td class="text-center" id="t_res_d5"></td>
         </tr>
@@ -298,13 +289,13 @@
             <td class="bg-gray text-center">缺失複查結果</td>
             <td colspan="4">
                 ☑ 無缺失項目，免填複查欄位。<br>
-                <span style="color:#999;">□已完成改善（抽附改善前中後照片） &nbsp;&nbsp;&nbsp;&nbsp; □未完成改善，填具「缺失改善追蹤表」<br>
+                <span style="color:#888;">□已完成改善（抽附改善前中後照片） &nbsp;&nbsp;&nbsp;&nbsp; □未完成改善，填具「缺失改善追蹤表」<br>
                 複查日期：  年  月  日 &nbsp;&nbsp;&nbsp;&nbsp; 複查人員簽名：</span>
             </td>
         </tr>
         <tr>
             <td class="bg-gray text-center">備註</td>
-            <td colspan="4" style="font-size:8pt; color:#444; line-height: 1.2;">
+            <td colspan="4" style="font-size:8.5pt; color:#333; line-height: 1.3;">
                 1. 抽查標準及實際抽查情形應具體明確或量化尺寸。<br>
                 2. 抽查結果合格者註明「 ○ 」，不合格者註明「 ╳ 」，如無需抽查之項目則打「／」。<br>
                 3. 本表由監造工地現場人員實地抽查後覈實記載簽認。
@@ -331,13 +322,13 @@
             <td>
                 <strong>施工位置：</strong><span class="p-loc"></span><br>
                 <strong>工程項目：</strong>鋼筋工程 (主筋/副筋間距)<br>
-                <div id="pt_d2"></div>
+                <div id="pt_p_d2"></div>
                 <strong>拍照日期：</strong><span class="p-date"></span>
             </td>
             <td>
                 <strong>施工位置：</strong><span class="p-loc"></span><br>
                 <strong>工程項目：</strong>鋼筋工程 (保護層量測)<br>
-                <div id="pt_d4"></div>
+                <div id="pt_p_d4"></div>
                 <strong>拍照日期：</strong><span class="p-date"></span>
             </td>
         </tr>
@@ -345,13 +336,13 @@
             <td>
                 <strong>施工位置：</strong><span class="p-loc"></span><br>
                 <strong>工程項目：</strong>鋼筋工程 (墊塊配置間距)<br>
-                <div id="pt_d5"></div>
+                <div id="pt_p_d5"></div>
                 <strong>拍照日期：</strong><span class="p-date"></span>
             </td>
             <td>
                 <strong>施工位置：</strong><span class="p-loc"></span><br>
                 <strong>工程項目：</strong>鋼筋工程 (搭接長度)<br>
-                <div id="pt_d6"></div>
+                <div id="pt_p_d6"></div>
                 <strong>拍照日期：</strong><span class="p-date"></span>
             </td>
         </tr>
@@ -359,13 +350,13 @@
             <td>
                 <strong>施工位置：</strong><span class="p-loc"></span><br>
                 <strong>工程項目：</strong>鋼筋工程 (開口補強 1)<br>
-                <div id="pt_d7_1"></div>
+                <div id="pt_p_d7_1"></div>
                 <strong>拍照日期：</strong><span class="p-date"></span>
             </td>
             <td>
                 <strong>施工位置：</strong><span class="p-loc"></span><br>
                 <strong>工程項目：</strong>鋼筋工程 (開口補強 2)<br>
-                <div id="pt_d7_2"></div>
+                <div id="pt_p_d7_2"></div>
                 <strong>拍照日期：</strong><span class="p-date"></span>
             </td>
         </tr>
@@ -373,7 +364,7 @@
 </div>
 
 <script>
-    // 儲存照片 Base64 的物件
+    // 儲存照片 Base64 資料
     const photoStore = {};
 
     function previewImage(input, id) {
@@ -383,13 +374,13 @@
             reader.onload = function(e) {
                 document.getElementById(id).src = e.target.result;
                 document.getElementById(id).style.display = 'block';
-                photoStore[id] = e.target.result; // 快取起來列印用
+                photoStore[id] = e.target.result; // 快取相片資料
             }
             reader.readAsDataURL(file);
         }
     }
 
-    // 設置手寫簽名板
+    // 設置手機手寫簽名板
     function initCanvas(id) {
         const canvas = document.getElementById(id);
         const ctx = canvas.getContext('2d');
@@ -419,92 +410,96 @@
         initCanvas('can_sig1'); initCanvas('can_sig2');
     };
 
-    // 核心整合：將手機UI輸入的資料，完美對齊到 Word 複刻表格中，並啟動列印
+    // 點擊按鈕觸發：整合資料並拉起列印
     function generateWordPDF() {
-        // 1. 基本工程資訊同步
-        document.getElementById('td_sub_eng').innerText = document.getElementById('ui_sub_eng').value;
-        document.getElementById('td_location').innerText = document.getElementById('ui_location').value;
-        
-        // 處理日期格式 (將 2026-06-04 轉為 民國 115 年 06 月 04 日)
-        const dateVal = document.getElementById('ui_date').value;
-        if(dateVal) {
-            const parts = dateVal.split('-');
-            const twYear = parseInt(parts[0]) - 1911;
-            document.getElementById('td_date').innerText = `${twYear}年${parts[1]}月${parts[2]}日`;
-            document.getElementById('lbl_no').innerText = `${twYear}${parts[1]}${parts[2]}`;
-            // 同步照片紀錄表的日期
-            document.querySelectorAll('.p-date').forEach(el => el.innerText = `${twYear}.${parts[1]}.${parts[2]}`);
+        try {
+            // 1. 基本欄位填寫同步
+            document.getElementById('td_sub_eng').innerText = document.getElementById('ui_sub_eng').value;
+            document.getElementById('td_location').innerText = document.getElementById('ui_location').value;
+            
+            // 日期轉換邏輯
+            const dateVal = document.getElementById('ui_date').value;
+            if(dateVal) {
+                const parts = dateVal.split('-');
+                const twYear = parseInt(parts[0]) - 1911;
+                document.getElementById('td_date').innerText = `${twYear}年${parts[1]}月${parts[2]}日`;
+                document.getElementById('lbl_no').innerText = `${twYear}${parts[1]}${parts[2]}`;
+                document.querySelectorAll('.p-date').forEach(el => el.innerText = `${twYear}.${parts[1]}.${parts[2]}`);
+            }
+            
+            // 同步照片表上的施工位置
+            document.querySelectorAll('.p-loc').forEach(el => el.innerText = document.getElementById('ui_location').value);
+
+            // 2. 綁紮核取方塊
+            document.getElementById('p_chk_bind1').innerText = document.getElementById('ui_bind1').checked ? '☑' : '□';
+            document.getElementById('p_chk_bind2').innerText = document.getElementById('ui_bind2').checked ? '☑' : '□';
+
+            // 3. 欄位查驗值填入與結果自動帶入 (◯ 或 ／)
+            const fields = [
+                { ui: 'ui_val_b1', tVal: 't_val_b1', tRes: 't_res_b1' },
+                { ui: 'ui_val_d1', tVal: 't_val_d1', tRes: 't_res_d1' },
+                { ui: 'ui_val_d2', tVal: 't_val_d2', tRes: 't_res_d2' },
+                { ui: 'ui_val_d3', tVal: 't_val_d3', tRes: 't_res_d3' },
+                { ui: 'ui_val_d4', tVal: 't_val_d4', tRes: 't_res_d4' },
+                { ui: 'ui_val_d5', tVal: 't_val_d5', tRes: 't_res_d5' },
+                { ui: 'ui_val_d6', tVal: 't_val_d6', tRes: 't_res_d6' },
+                { ui: 'ui_val_d7', tVal: 't_val_d7', tRes: 't_res_d7' },
+                { ui: 'ui_val_a1', tVal: 't_val_a1', tRes: 't_res_a1' },
+                { ui: 'ui_val_a2', tVal: 't_val_a2', tRes: 't_res_a2' }
+            ];
+
+            fields.forEach(f => {
+                const txt = document.getElementById(f.ui).value.trim();
+                if(txt === "") {
+                    document.getElementById(f.tVal).innerText = "—";
+                    document.getElementById(f.tRes).innerText = "／";
+                } else {
+                    document.getElementById(f.tVal).innerText = txt;
+                    document.getElementById(f.tRes).innerText = "◯";
+                }
+            });
+
+            // 4. 手寫畫布同步轉印
+            const syncSigImg = (canvasId, areaId) => {
+                const cv = document.getElementById(canvasId);
+                const area = document.getElementById(areaId);
+                area.innerHTML = "";
+                
+                const blank = document.createElement('canvas');
+                blank.width = cv.width; blank.height = cv.height;
+                if(cv.toDataURL() !== blank.toDataURL()) {
+                    const img = document.createElement('img');
+                    img.src = cv.toDataURL();
+                    img.className = "sig-img-print";
+                    area.appendChild(img);
+                }
+            };
+            syncSigImg('can_sig1', 'p_sig1_area');
+            syncSigImg('can_sig2', 'p_sig2_area');
+
+            // 5. 照片表網格渲染
+            const photoIds = ['p_d2', 'p_d4', 'p_d5', 'p_d6', 'p_d7_1', 'p_d7_2'];
+            photoIds.forEach(id => {
+                const box = document.getElementById('pt_' + id);
+                box.innerHTML = "";
+                if(photoStore[id]) {
+                    const img = document.createElement('img');
+                    img.src = photoStore[id];
+                    img.className = "print-photo-img";
+                    box.appendChild(img);
+                } else {
+                    box.innerHTML = "<div style='height:140px; border:1px dashed #ccc; text-align:center; line-height:140px; color:#999; font-size:9pt;'>未檢附照片</div>";
+                }
+            });
+
+            // 6. 萬事俱備，直接呼叫列印視窗
+            setTimeout(() => {
+                window.print();
+            }, 200);
+
+        } catch (error) {
+            alert('發生排版整合錯誤，錯誤訊息: ' + error.message);
         }
-        
-        // 同步照片紀錄表的位置
-        document.querySelectorAll('.p-loc').forEach(el => el.innerText = document.getElementById('ui_location').value);
-
-        // 2. 逐步/跳步綁紮核取方塊同步
-        document.getElementById('p_chk_bind1').innerText = document.getElementById('ui_bind1').checked ? '☑' : '□';
-        document.getElementById('p_chk_bind2').innerText = document.getElementById('ui_bind2').checked ? '☑' : '□';
-
-        // 3. 查驗數值與 ◯ ╳ ／ 結果邏輯判斷自動帶入
-        const checkMap = [
-            { uiId: 'ui_val_b1', tValId: 't_val_b1', tResId: 't_res_b1' }, // 施工前
-            { uiId: 'ui_val_d1', tValId: 't_val_d1', tResId: 't_res_d1' }, // 號數
-            { uiId: 'ui_val_d2', tValId: 't_val_d2', tResId: 't_res_d2' }, // 間距
-            { uiId: 'ui_val_d3', tValId: 't_val_d3', tResId: 't_res_d3' }, // 綁紮
-            { uiId: 'ui_val_d4', tValId: 't_val_d4', tResId: 't_res_d4' }, // 保護層
-            { uiId: 'ui_val_d5', tValId: 't_val_d5', tResId: 't_res_d5' }, // 墊塊
-            { uiId: 'ui_val_d6', tValId: 't_val_d6', tResId: 't_res_d6' }, // 搭接
-            { uiId: 'ui_val_d7', tValId: 't_val_d7', tResId: 't_res_d7' }, // 補強
-            { uiId: 'ui_val_a1', tValId: 't_val_a1', tResId: 't_res_a1' }, // 平直
-            { uiId: 'ui_val_a2', tValId: 't_val_a2', tResId: 't_res_a2' }  // 表面
-        ];
-
-        checkMap.forEach(item => {
-            const val = document.getElementById(item.uiId).value.trim();
-            if(val === "") {
-                document.getElementById(item.tValId).innerText = "—";
-                document.getElementById(item.tResId).innerText = "／"; // 無此項
-            } else {
-                document.getElementById(item.tValId).innerText = val;
-                document.getElementById(item.tResId).innerText = "◯"; // 有填寫預設為合格
-            }
-        });
-
-        // 4. 將手寫畫布轉為正式照片，嵌入 Word 簽名格子
-        const syncSignature = (canvasId, areaId) => {
-            const canvas = document.getElementById(canvasId);
-            const area = document.getElementById(areaId);
-            area.innerHTML = "";
-            // 檢查畫布是否為空白 (如果使用者有畫畫)
-            const blank = document.createElement('canvas');
-            blank.width = canvas.width; blank.height = canvas.height;
-            if(canvas.toDataURL() !== blank.toDataURL()) {
-                const img = document.createElement('img');
-                img.src = canvas.toDataURL();
-                img.className = "sig-img-print";
-                area.appendChild(img);
-            }
-        };
-        syncSignature('can_sig1', 'p_sig1_area');
-        syncSignature('can_sig2', 'p_sig2_area');
-
-        // 5. 渲染照片到下方的照片紀錄表格子中
-        const photoKeys = ['p_d2', 'p_d4', 'p_d5', 'p_d6', 'p_d7_1', 'p_d7_2'];
-        photoKeys.forEach(key => {
-            const targetDiv = document.getElementById('pt_' + key);
-            targetDiv.innerHTML = "";
-            if(photoStore[key]) {
-                const img = document.createElement('img');
-                img.src = photoStore[key];
-                img.className = "print-photo-img";
-                targetDiv.appendChild(img);
-            } else {
-                targetDiv.innerHTML = "<div style='height:120px; border:1px dashed #ccc; text-align:center; line-height:120px; color:#999; font-size:9pt;'>未附照片</div>";
-            }
-        });
-
-        // 6. 萬事俱備，拉起系統列印（此時 CSS Print 會自動啟用 Word 排版，並隱藏手機UI）
-        setTimeout(() => {
-            window.print();
-        }, 300);
     }
 </script>
 
