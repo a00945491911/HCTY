@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鋼筋工程抽查行動紀錄表 v3.0</title>
+    <title>表7.3.1鋼筋工程抽查紀錄表</title>
     <style>
         :root {
             --primary-color: #2b579a;
@@ -19,18 +19,28 @@
             color: #333;
         }
         .container {
-            max-width: 600px;
+            max-width: 650px;
             margin: 0 auto;
             background: #fff;
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        h2 {
+        .doc-header {
             text-align: center;
-            color: var(--primary-color);
             margin-top: 0;
+            margin-bottom: 5px;
+        }
+        h2 {
+            margin: 0;
+            color: var(--primary-color);
             font-size: 1.4rem;
+        }
+        .doc-no {
+            text-align: right;
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 10px;
         }
         .info-block {
             background: #eef2f7;
@@ -78,7 +88,7 @@
             margin-bottom: 4px;
             font-weight: bold;
         }
-        input[type="text"], input[type="date"], textarea, select {
+        input[type="text"], input[type="date"] {
             width: 100%;
             padding: 8px;
             box-sizing: border-box;
@@ -122,8 +132,8 @@
         }
         .photo-preview {
             max-width: 100%;
-            max-height: 140px;
-            margin-top: 5px;
+            max-height: 200px;
+            margin-top: 8px;
             display: none;
             border-radius: 4px;
             border: 1px solid #ddd;
@@ -175,12 +185,62 @@
         .stage-content.active {
             display: block;
         }
+
+        /* ==================== 關鍵設定：PDF 列印排版優化 ==================== */
+        @media print {
+            body {
+                background-color: #fff;
+                padding: 0;
+                margin: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+            /* 隱藏所有不需要出現在 PDF 報告上的控制按鈕與選單 */
+            .submit-btn, .btn-clear, input[type="file"], .stage-toggle-block {
+                display: none !important;
+            }
+            /* 讓所有施工階段在列印時強制全部顯示，方便一次導出完整報表 */
+            .stage-content {
+                display: block !important;
+            }
+            .info-block {
+                background: #f8f9fa !important;
+                border: 1px solid #ccc;
+            }
+            .card {
+                background: #fff !important;
+                page-break-inside: avoid; /* 防止項目被 A4 紙張切斷 */
+            }
+            input[type="text"], input[type="date"] {
+                border: none !important;
+                border-bottom: 1px dashed #000 !important;
+                padding: 2px 0 !important;
+                background: transparent !important;
+            }
+            .photo-upload {
+                border: none !important;
+                padding: 0 !important;
+            }
+            .photo-preview {
+                display: block !important; /* 確保有照片的一定會印出來 */
+                max-height: 250px;
+            }
+            canvas {
+                border: none !important;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>鋼筋工程抽查行動紀錄表</h2>
+    <div class="doc-header">
+        <h2>表7.3.1 鋼筋工程抽查紀錄表</h2>
+    </div>
+    <div class="doc-no">編號：EA-1150604-01</div>
     
     <div class="info-block">
         <div class="form-group" style="margin-bottom: 12px;">
@@ -203,8 +263,8 @@
             <input type="date" id="check_date" value="2026-06-04">
         </div>
 
-        <div class="form-group" style="margin-top: 12px;">
-            <label style="color: var(--primary-color); font-size: 0.95rem;">施工流程切換：</label>
+        <div class="form-group stage-toggle-block" style="margin-top: 12px;">
+            <label style="color: var(--primary-color); font-size: 0.95rem;">現場施工流程切換 (點選可換項目)：</label>
             <div class="radio-group">
                 <label><input type="radio" name="flow_stage" value="before" onclick="switchStage('before')"> 施工前</label>
                 <label><input type="radio" name="flow_stage" value="during" onclick="switchStage('during')" checked> 施工中</label>
@@ -220,7 +280,7 @@
             <div class="card-standard">標準：進場鋼筋必須墊高至少10cm以上，防止鋼筋污染及銹蝕。</div>
             <div class="form-group">
                 <label>實際抽查情形：</label>
-                <input type="text" id="val_b1" placeholder="請敘述現場抽查值">
+                <input type="text" placeholder="請敘述現場抽查值" value="">
             </div>
             <div class="form-group">
                 <label>抽查結果：</label>
@@ -241,7 +301,7 @@
             <div class="card-standard">標準：D10、D13、D16</div>
             <div class="form-group">
                 <label>實際抽查情形：</label>
-                <input type="text" id="val_d1" value="主筋 D13，副筋 D13">
+                <input type="text" value="主筋 D13，副筋 D13">
             </div>
             <div class="form-group">
                 <label>抽查結果：</label>
@@ -258,7 +318,7 @@
             <div class="card-standard">標準：D____@____cm (各間距允差值：最小間距-6mm)</div>
             <div class="form-group">
                 <label>實際抽查情形：</label>
-                <input type="text" id="val_d2" value="主筋 74cm內 6支(平均14.8cm)；副筋 59cm內 5支(平均14.8cm)">
+                <input type="text" value="主筋 74cm內 6支(平均14.8cm)；副筋 59cm內 5支(平均14.8cm)">
             </div>
             <div class="form-group">
                 <label>抽查結果：</label>
@@ -285,7 +345,7 @@
                     <label><input type="checkbox" id="bind_type2"> 跳步綁紮(鋼筋間隔&lt;20cm)</label>
                 </div>
                 <label>實際抽查情形：</label>
-                <input type="text" id="val_d3" value="鐵絲紮實牢固，無鬆脫現象">
+                <input type="text" value="鐵絲紮實牢固，無鬆脫現象">
             </div>
             <div class="form-group">
                 <label>抽查結果：</label>
@@ -302,7 +362,7 @@
             <div class="card-standard">標準：□一般為5cm+0.6cm  □與土壤及水接觸者為7.5cm+0.6cm</div>
             <div class="form-group">
                 <label>實際抽查情形：</label>
-                <input type="text" id="val_d4" value="現場量測 5.1 cm">
+                <input type="text" value="現場量測 5.1 cm">
             </div>
             <div class="form-group">
                 <label>抽查結果：</label>
@@ -324,7 +384,7 @@
             <div class="card-standard">標準：D10≦60cm、D13≦80cm、D16≦100cm。墊塊強度須大於混凝土。</div>
             <div class="form-group">
                 <label>實際抽查情形：</label>
-                <input type="text" id="val_d5" value="墊塊間距 75cm">
+                <input type="text" value="墊塊間距 75cm(量測)">
             </div>
             <div class="form-group">
                 <label>抽查結果：</label>
@@ -346,7 +406,7 @@
             <div class="card-standard">標準：D10≧40cm、D13≧52cm、D16≧64cm。同一斷面不超過1/2。</div>
             <div class="form-group">
                 <label>實際抽查情形：</label>
-                <input type="text" id="val_d6" value="D13搭接長度符合規範">
+                <input type="text" value="D13搭接長度符合規範">
             </div>
             <div class="form-group">
                 <label>抽查結果：</label>
@@ -368,7 +428,7 @@
             <div class="card-standard">標準：側溝蓋兩側(平行/垂直道路) 2-D13 L=(依設計圖說)</div>
             <div class="form-group">
                 <label>實際抽查情形：</label>
-                <input type="text" id="val_d7" value="側溝蓋開口四角已綁紮補強筋">
+                <input type="text" value="側溝蓋開口四角已綁紮補強筋">
             </div>
             <div class="form-group">
                 <label>抽查結果：</label>
@@ -403,7 +463,7 @@
             <div class="card-standard">標準：有無水平移位或垂直變形</div>
             <div class="form-group">
                 <label>實際抽查情形：</label>
-                <input type="text" id="val_a1" placeholder="請敘述平直度情形">
+                <input type="text" placeholder="請敘述平直度情形" value="">
             </div>
             <div class="form-group">
                 <label>抽查結果：</label>
@@ -419,7 +479,7 @@
             <div class="card-standard">標準：無銹蝕、油污、水泥漿等雜物</div>
             <div class="form-group">
                 <label>實際抽查情形：</label>
-                <input type="text" id="val_a2" placeholder="請敘述鋼筋表面清潔度">
+                <input type="text" placeholder="請敘述鋼筋表面清潔度" value="">
             </div>
             <div class="form-group">
                 <label>抽查結果：</label>
@@ -450,13 +510,10 @@
         <button type="button" class="btn-clear" onclick="clearCanvas('sig-canvas2')">清除重簽</button>
     </div>
 
-    <button type="button" class="submit-btn" onclick="submitForm()">💾 儲存並導出紀錄檔案</button>
+    <button type="button" class="submit-btn" onclick="submitForm()">🖨️ 產生抽查紀錄報表 (轉存 PDF)</button>
 </div>
 
 <script>
-    // 儲存照片 Base64 資料的暫存器
-    const photoDataStore = {};
-
     function switchStage(stage) {
         document.querySelectorAll('.stage-content').forEach(el => {
             el.classList.remove('active');
@@ -472,8 +529,6 @@
                 const img = document.getElementById(previewId);
                 img.src = e.target.result;
                 img.style.display = 'block';
-                // 將照片編碼儲存，以便導出
-                photoDataStore[previewId] = e.target.result;
             }
             reader.readAsDataURL(file);
         }
@@ -549,50 +604,12 @@
         setupSignature('sig-canvas2');
     };
 
-    // 實戰導出功能：將所有工地現場資料打包成文字檔下載到手機
+    // 呼叫系統原生列印轉 PDF 核心程式
     function submitForm() {
-        // 抓取單選鈕結果的輔助函式
-        const getRadioVal = (name) => {
-            const el = document.querySelector(`input[name="${name}"]:checked`);
-            return el ? el.value : '未填';
-        };
-
-        const docData = {
-            "工程名稱": "桃園市龍潭區雙龍國小校園周邊暨行車安全道路改善工程",
-            "分項工程名稱": document.getElementById('sub_eng_name').value,
-            "抽查位置": document.getElementById('check_location').value,
-            "抽查日期": document.getElementById('check_date').value,
-            "施工階段": getRadioVal('flow_stage'),
-            "抽查明細": {
-                "施工前_進場堆置": { "實際情形": document.getElementById('val_b1').value, "結果": getRadioVal('res_b1') },
-                "施工中_1_鋼筋號數": { "實際情形": document.getElementById('val_d1').value, "結果": getRadioVal('res_d1') },
-                "施工中_2_鋼筋間距": { "實際情形": document.getElementById('val_d2').value, "結果": getRadioVal('res_d2'), "有照片": !!photoDataStore['prev_d2'] },
-                "施工中_3_鋼筋綁紮": { "實際情形": document.getElementById('val_d3').value, "結果": getRadioVal('res_d3') },
-                "施工中_4_保護層": { "實際情形": document.getElementById('val_d4').value, "結果": getRadioVal('res_d4'), "有照片": !!photoDataStore['prev_d4'] },
-                "施工中_5_鋼筋墊塊": { "實際情形": document.getElementById('val_d5').value, "結果": getRadioVal('res_d5'), "有照片": !!photoDataStore['prev_d5'] },
-                "施工中_6_搭接長度": { "實際情形": document.getElementById('val_d6').value, "結果": getRadioVal('res_d6'), "有照片": !!photoDataStore['prev_d6'] },
-                "施工中_7_開口補強": { "實際情形": document.getElementById('val_d7').value, "結果": getRadioVal('res_d7'), "照片1": !!photoDataStore['prev_d7_1'], "照片2": !!photoDataStore['prev_d7_2'] },
-                "施工後_1_平直度": { "實際情形": document.getElementById('val_a1').value, "結果": getRadioVal('res_a1') },
-                "施工後_2_表面處理": { "實際情形": document.getElementById('val_a2').value, "結果": getRadioVal('res_a2') }
-            },
-            "簽名數據": {
-                "監造現場人員": document.getElementById('sig-canvas1').toDataURL(),
-                "監造工地負責人": document.getElementById('sig-canvas2').toDataURL()
-            }
-        };
-
-        // 轉換為 JSON 字串
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(docData, null, 2));
-        
-        // 建立隱藏下載連結
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `鋼筋抽查紀錄_${docData.抽查日期}.json`);
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-
-        alert('🎉 儲存成功！抽查數據、簽名圖檔已成功打包下載至您的手機內。');
+        // 先貼心提示工程師
+        alert('🎉 數據、現場照片與簽名已就緒！\n\n系統即將開啟列印視窗，請將印表機目的地選擇為「儲存為 PDF」，即可直接導出完整 A4 報告。');
+        // 直接調用系統列印
+        window.print();
     }
 </script>
 
