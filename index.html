@@ -23,7 +23,7 @@
         .photo-upload { margin-top: 10px; background: #fff; border: 1px dashed #bbb; padding: 8px; border-radius: 4px; }
         .photo-preview { max-width: 100%; max-height: 150px; margin-top: 5px; display: none; border-radius: 4px; border: 1px solid #ddd; }
         .sig-container { border: 1px dashed #666; background: #fff; margin-bottom: 5px; border-radius: 4px; }
-        canvas { width: 100%; height: 120px; display: block; touch-action: none; background: #fff; }
+        canvas { width: 100%; height: 130px; display: block; touch-action: none; background: #fff; }
         .btn-clear { background: #6c757d; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; }
         .submit-btn { background: var(--success-color); color: white; border: none; width: 100%; padding: 14px; font-size: 1.1rem; font-weight: bold; border-radius: 6px; margin-top: 25px; cursor: pointer; display: block; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
@@ -41,9 +41,12 @@
             table.word-table th, table.word-table td { border: 1px solid #000; padding: 6px; font-size: 10pt; text-align: left; vertical-align: middle; word-wrap: break-word; }
             .text-center { text-align: center !important; }
             .bg-gray { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .sig-row { display: flex; justify-content: space-between; margin-top: 15px; font-size: 11pt; font-weight: bold; }
-            .sig-box-print { width: 45%; border-bottom: 1px solid #000; height: 60px; display: inline-block; vertical-align: bottom; position: relative; }
-            .sig-img-print { max-height: 55px; max-width: 100%; display: block; margin: 0 auto; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); }
+            
+            /* 修正簽名欄排版定位，確保壓線呈現 */
+            .sig-row { display: flex; justify-content: space-between; margin-top: 20px; font-size: 11pt; font-weight: bold; }
+            .sig-box-print { width: 45%; border-bottom: 1px solid #000; height: 65px; display: inline-block; position: relative; }
+            .sig-img-print { max-height: 60px; max-width: 90%; display: block; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); }
+            
             .page-break { page-break-before: always; }
             .photo-report-title { font-size: 14pt; font-weight: bold; margin: 15px 0 5px 0; text-align: center; }
             .photo-grid-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -55,7 +58,7 @@
 <body>
 
 <div class="container">
-    <h2>行動填報：鋼筋抽查紀錄表</h2>
+    <h2>行動填報：鋼筋工程抽查紀錄表</h2>
     
     <div class="info-block">
         <div class="form-group"><label>工程名稱：</label><strong>桃園市龍潭區雙龍國小校園周邊暨行車安全道路改善工程</strong></div>
@@ -158,12 +161,12 @@
     <div class="card">
         <label>監造現場人員簽名：</label>
         <div class="sig-container"><canvas id="can_sig1"></canvas></div>
-        <button type="button" class="btn-clear" onclick="clearSig('can_sig1')">清除重簽</button>
+        <button type="button" class="btn-clear" onclick="clearSig('can_sig1', 'sigData1')">清除重簽</button>
     </div>
     <div class="card">
         <label>監造工地負責(授權)人簽名：</label>
         <div class="sig-container"><canvas id="can_sig2"></canvas></div>
-        <button type="button" class="btn-clear" onclick="clearSig('can_sig2')">清除重簽</button>
+        <button type="button" class="btn-clear" onclick="clearSig('can_sig2', 'sigData2')">清除重簽</button>
     </div>
 
     <button type="button" class="submit-btn" onclick="generateWordPDF()">🖨️ 產生 Word 格式抽查紀錄表 (PDF)</button>
@@ -364,8 +367,9 @@
 </div>
 
 <script>
-    // 儲存照片 Base64 資料
     const photoStore = {};
+    let sigData1 = null;
+    let sigData2 = null;
 
     function previewImage(input, id) {
         const file = input.files[0];
@@ -374,18 +378,19 @@
             reader.onload = function(e) {
                 document.getElementById(id).src = e.target.result;
                 document.getElementById(id).style.display = 'block';
-                photoStore[id] = e.target.result; // 快取相片資料
+                photoStore[id] = e.target.result;
             }
             reader.readAsDataURL(file);
         }
     }
 
-    // 設置手機手寫簽名板
-    function initCanvas(id) {
+    // 核心簽名板初始化
+    function initCanvas(id, dataStoreKey) {
         const canvas = document.getElementById(id);
         const ctx = canvas.getContext('2d');
+        
         canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = 120;
+        canvas.height = 130;
         ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#000000';
         
         let drawing = false;
@@ -394,30 +399,44 @@
             let cv = e.touches ? e.touches[0] : e;
             return { x: cv.clientX - rect.left, y: cv.clientY - rect.top };
         };
+
+        // 只要手指一放開，立刻即時把當前畫布內容同步備份為 Base64
+        const saveSignatureData = () => {
+            const blank = document.createElement('canvas');
+            blank.width = canvas.width; blank.height = canvas.height;
+            if (canvas.toDataURL() !== blank.toDataURL()) {
+                if(dataStoreKey === 'sigData1') sigData1 = canvas.toDataURL();
+                if(dataStoreKey === 'sigData2') sigData2 = canvas.toDataURL();
+            }
+        };
+
         canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); let p = getPos(e); ctx.moveTo(p.x, p.y); });
         canvas.addEventListener('mousemove', (e) => { if(!drawing)return; let p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
-        window.addEventListener('mouseup', () => drawing = false);
+        window.addEventListener('mouseup', () => { if(drawing){ drawing = false; saveSignatureData(); } });
+        
         canvas.addEventListener('touchstart', (e) => { drawing = true; ctx.beginPath(); let p = getPos(e); ctx.moveTo(p.x, p.y); if(e.cancelable)e.preventDefault(); }, {passive:false});
         canvas.addEventListener('touchmove', (e) => { if(!drawing)return; let p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); if(e.cancelable)e.preventDefault(); }, {passive:false});
+        canvas.addEventListener('touchend', (e) => { if(drawing){ drawing = false; saveSignatureData(); } }, {passive:false});
     }
 
-    function clearSig(id) {
+    // 【關鍵修復】清除重簽時，要把對應的全域圖片變數也徹底清空（改為 null）
+    function clearSig(id, dataStoreKey) {
         const cv = document.getElementById(id);
-        cv.getContext('2d').clearRect(0,0,cv.width,cv.height);
+        cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+        if(dataStoreKey === 'sigData1') sigData1 = null;
+        if(dataStoreKey === 'sigData2') sigData2 = null;
     }
 
     window.onload = function() {
-        initCanvas('can_sig1'); initCanvas('can_sig2');
+        initCanvas('can_sig1', 'sigData1'); 
+        initCanvas('can_sig2', 'sigData2');
     };
 
-    // 點擊按鈕觸發：整合資料並拉起列印
     function generateWordPDF() {
         try {
-            // 1. 基本欄位填寫同步
             document.getElementById('td_sub_eng').innerText = document.getElementById('ui_sub_eng').value;
             document.getElementById('td_location').innerText = document.getElementById('ui_location').value;
             
-            // 日期轉換邏輯
             const dateVal = document.getElementById('ui_date').value;
             if(dateVal) {
                 const parts = dateVal.split('-');
@@ -427,14 +446,10 @@
                 document.querySelectorAll('.p-date').forEach(el => el.innerText = `${twYear}.${parts[1]}.${parts[2]}`);
             }
             
-            // 同步照片表上的施工位置
             document.querySelectorAll('.p-loc').forEach(el => el.innerText = document.getElementById('ui_location').value);
-
-            // 2. 綁紮核取方塊
             document.getElementById('p_chk_bind1').innerText = document.getElementById('ui_bind1').checked ? '☑' : '□';
             document.getElementById('p_chk_bind2').innerText = document.getElementById('ui_bind2').checked ? '☑' : '□';
 
-            // 3. 欄位查驗值填入與結果自動帶入 (◯ 或 ／)
             const fields = [
                 { ui: 'ui_val_b1', tVal: 't_val_b1', tRes: 't_res_b1' },
                 { ui: 'ui_val_d1', tVal: 't_val_d1', tRes: 't_res_d1' },
@@ -459,25 +474,26 @@
                 }
             });
 
-            // 4. 手寫畫布同步轉印
-            const syncSigImg = (canvasId, areaId) => {
-                const cv = document.getElementById(canvasId);
-                const area = document.getElementById(areaId);
-                area.innerHTML = "";
-                
-                const blank = document.createElement('canvas');
-                blank.width = cv.width; blank.height = cv.height;
-                if(cv.toDataURL() !== blank.toDataURL()) {
-                    const img = document.createElement('img');
-                    img.src = cv.toDataURL();
-                    img.className = "sig-img-print";
-                    area.appendChild(img);
-                }
-            };
-            syncSigImg('can_sig1', 'p_sig1_area');
-            syncSigImg('can_sig2', 'p_sig2_area');
+            // 渲染監造現場人員簽名（若被清除則不顯示舊圖）
+            const area1 = document.getElementById('p_sig1_area');
+            area1.innerHTML = "";
+            if (sigData1) {
+                const img = document.createElement('img');
+                img.src = sigData1;
+                img.className = "sig-img-print";
+                area1.appendChild(img);
+            }
 
-            // 5. 照片表網格渲染
+            // 渲染監造工地負責人簽名（若被清除則不顯示舊圖）
+            const area2 = document.getElementById('p_sig2_area');
+            area2.innerHTML = "";
+            if (sigData2) {
+                const img = document.createElement('img');
+                img.src = sigData2;
+                img.className = "sig-img-print";
+                area2.appendChild(img);
+            }
+
             const photoIds = ['p_d2', 'p_d4', 'p_d5', 'p_d6', 'p_d7_1', 'p_d7_2'];
             photoIds.forEach(id => {
                 const box = document.getElementById('pt_' + id);
@@ -492,13 +508,12 @@
                 }
             });
 
-            // 6. 萬事俱備，直接呼叫列印視窗
             setTimeout(() => {
                 window.print();
-            }, 200);
+            }, 250);
 
         } catch (error) {
-            alert('發生排版整合錯誤，錯誤訊息: ' + error.message);
+            alert('系統整合發生問題: ' + error.message);
         }
     }
 </script>
