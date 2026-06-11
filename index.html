@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>表7.3.1鋼筋工程抽查紀錄表</title>
     <style>
-        /* ==================== 1. 手機現場操作介面樣式 ==================== */
+        /* ==================== 1. 手機行動端現場操作介面樣式 ==================== */
         :root { --primary-color: #2b579a; --success-color: #28a745; --bg-color: #f4f6f9; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); margin: 0; padding: 10px; color: #333; }
         .container { max-width: 680px; margin: 0 auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: var(--primary-color); margin: 0 0 15px 0; font-size: 1.3rem; }
+        .quick-load-panel { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 6px; margin-bottom: 15px; text-align: center; }
+        .quick-btn { background: #ffc107; color: #212529; border: none; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 0.95rem; }
+        
         .info-block { background: #eef2f7; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 0.95rem; }
         .section-title { background: var(--primary-color); color: white; padding: 6px 10px; border-radius: 4px; font-size: 1rem; margin-top: 20px; margin-bottom: 10px; }
         .card { border: 1px solid #ddd; border-radius: 6px; padding: 12px; margin-bottom: 12px; background: #fafafa; }
@@ -23,14 +26,21 @@
         .checkbox-group { display: flex; gap: 12px; margin-top: 5px; flex-wrap: wrap; background: #fff; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         .checkbox-group label { display: flex; align-items: center; gap: 4px; font-weight: normal; font-size: 0.95rem; cursor: pointer; margin-bottom: 0; }
         
-        /* 現場手寫核心區雙欄佈局 */
-        .handwrite-zone { display: flex; gap: 10px; margin-top: 10px; }
-        .hw-box { flex: 1; }
-        .hw-title { font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 2px; }
-        .canvas-container { border: 1px solid #999; background: #fff; border-radius: 4px; position: relative; }
-        canvas.hw-canvas { width: 100%; height: 90px; display: block; touch-action: none; }
-        .btn-clear-sm { background: #6c757d; color: white; border: none; padding: 2px 6px; font-size: 0.75rem; border-radius: 3px; cursor: pointer; margin-top: 3px; width: 100%; text-align: center; }
+        /* 擴大後的手寫大空間排版 */
+        .hw-large-zone { margin-top: 8px; }
+        .hw-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+        .hw-title { font-size: 0.85rem; font-weight: bold; color: #444; }
+        .canvas-container { border: 1px solid #888; background: #fff; border-radius: 4px; overflow: hidden; }
+        canvas.hw-canvas { width: 100%; height: 110px; display: block; touch-action: none; }
+        .btn-clear-line { background: #6c757d; color: white; border: none; padding: 3px 10px; font-size: 0.75rem; border-radius: 3px; cursor: pointer; }
         
+        /* 快捷結果點選按鈕 */
+        .result-btn-group { display: flex; gap: 10px; margin-top: 8px; }
+        .res-btn { flex: 1; padding: 8px 0; border: 1px solid #ccc; background: #fff; border-radius: 4px; font-size: 0.95rem; font-weight: bold; cursor: pointer; text-align: center; }
+        .res-btn.active-ok { background: #e2f0d9; border-color: #385723; color: #385723; box-shadow: inset 0 0 4px rgba(0,0,0,0.15); }
+        .res-btn.active-ng { background: #fce4d6; border-color: #c65911; color: #c65911; box-shadow: inset 0 0 4px rgba(0,0,0,0.15); }
+        .res-btn.active-na { background: #fff2cc; border-color: #d6b211; color: #7f6000; box-shadow: inset 0 0 4px rgba(0,0,0,0.15); }
+
         .photo-upload { margin-top: 10px; background: #fff; border: 1px dashed #bbb; padding: 8px; border-radius: 4px; }
         .photo-preview { max-width: 100%; max-height: 120px; margin-top: 5px; display: none; border-radius: 4px; }
         
@@ -38,40 +48,51 @@
         
         #word-print-layout { display: none; }
 
-        /* ==================== 2. PDF Word 完美還原排版樣式 ==================== */
+        /* ==================== 2. PDF Word 完美還原排版樣式 (A4 寬度與字體高度優化) ==================== */
         @media print {
-            body { background: #fff; padding: 0; margin: 0; font-size: 11pt; color: #000; font-family: "SimSun", "標楷體", STKaiti, serif; }
+            body { background: #fff; padding: 0; margin: 0; color: #000; font-family: "標楷體", "PMingLiU", "SimSun", serif; }
             .container { display: none !important; }
-            #word-print-layout { display: block !important; width: 100%; }
-            .print-title { text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 2px; }
-            .print-no { text-align: right; font-size: 10.5pt; margin-bottom: 5px; }
-            table.word-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed; }
-            table.word-table th, table.word-table td { border: 1px solid #000; padding: 5px 6px; font-size: 10pt; text-align: left; vertical-align: middle; word-wrap: break-word; }
+            #word-print-layout { display: block !important; width: 100%; padding: 10mm 15mm; box-sizing: border-box; }
+            
+            .print-title { text-align: center; font-size: 18pt; font-weight: bold; margin-bottom: 15px; letter-spacing: 1px; }
+            .print-no { text-align: right; font-size: 11pt; font-weight: bold; margin-bottom: 5px; font-family: "Arial", sans-serif; }
+            
+            /* 完美還原 Word 表格線條與佈局 */
+            table.word-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; border: 1.5pt solid #000; }
+            table.word-table th, table.word-table td { border: 1px solid #000; padding: 7px 8px; font-size: 10.5pt; text-align: left; vertical-align: middle; word-wrap: break-word; line-height: 1.4; }
+            
             .text-center { text-align: center !important; }
-            .bg-gray { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .text-bold { font-weight: bold; }
+            .bg-gray { background-color: #ffffff !important; } /* 配合監造實務，列印維持清晰白底黑線 */
             
-            /* 行列手寫圖形嵌入大小控管 */
-            .print-hw-img { max-height: 42px; max-width: 95%; display: block; margin: 0 auto; }
+            /* 手寫字體圖片縮放壓入格子中 */
+            .print-hw-img { max-height: 42px; max-width: 98%; display: block; margin: 0 auto; object-fit: contain; }
+            .print-res-text { font-size: 14pt; font-weight: bold; text-align: center; display: block; font-family: "Arial", "標楷體"; }
             
-            /* 底部正式簽章區 */
-            .sig-row { display: flex; justify-content: space-between; margin-top: 15px; font-size: 11pt; font-weight: bold; }
-            .sig-box-print { width: 45%; border-bottom: 1px solid #000; height: 55px; display: inline-block; position: relative; }
-            .sig-img-print { max-height: 50px; max-width: 90%; display: block; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); }
+            /* 底部 Word 簽章欄對齊線 */
+            .sig-row { display: flex; justify-content: space-between; margin-top: 25px; font-size: 11pt; font-weight: bold; padding: 0 5px; }
+            .sig-box-print { width: 220px; border-bottom: 1px solid #000; height: 40px; display: inline-block; vertical-align: bottom; position: relative; }
+            .sig-img-print { max-height: 38px; max-width: 90%; display: block; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); }
             
             .page-break { page-break-before: always; }
-            .photo-report-title { font-size: 14pt; font-weight: bold; margin: 15px 0 10px 0; text-align: center; }
+            .photo-report-title { font-size: 16pt; font-weight: bold; margin: 20px 0 15px 0; text-align: center; letter-spacing: 1px; }
             
-            /* 動態相簿表格：若無照片則被 JS 隱藏 */
-            .photo-grid-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-            .photo-grid-table td { border: 1px solid #000; padding: 8px; vertical-align: top; width: 50%; height: 260px; }
-            .print-photo-img { width: 100%; max-height: 190px; object-fit: contain; display: block; margin: 4px auto; }
+            /* 照片附加頁表格 */
+            .photo-grid-table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1.5pt solid #000; }
+            .photo-grid-table td { border: 1px solid #000; padding: 10px; vertical-align: top; width: 50%; height: 280px; font-size: 10.5pt; line-height: 1.5; }
+            .print-photo-img { width: 100%; max-height: 195px; object-fit: contain; display: block; margin: 6px auto; border: 1px solid #ccc; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>行動填報：鋼筋工程抽查紀錄表</h2>
+    <h2>行動填報面板 (完美相容 Word 格式)</h2>
+    
+    <div class="quick-load-panel">
+        <p style="margin:0 0 8px 0; font-size:0.9rem; color:#666;">系統偵測到您有 2026-06-04 的預填 JSON 紀錄檔：</p>
+        <button type="button" class="quick-btn" onclick="loadJSONData()">⚡ 自動帶入歷史抽查數據文字</button>
+    </div>
     
     <div class="info-block">
         <div class="form-group">
@@ -83,7 +104,7 @@
         <div class="form-group"><label>抽查位置：</label><input type="text" id="ui_location" value="神龍路347巷B0K+005~130 (人行道底板)"></div>
         <div class="form-group"><label>抽查日期：</label><input type="date" id="ui_date" value="2026-06-04"></div>
         <div class="form-group">
-            <label>施工流程選項 (可自由勾選)：</label>
+            <label>施工流程選項 (Word 核取方塊)：</label>
             <div class="checkbox-group">
                 <label><input type="checkbox" id="ui_flow_b"> 施工前</label>
                 <label><input type="checkbox" id="ui_flow_d" checked> 施工中抽查</label>
@@ -92,85 +113,64 @@
         </div>
     </div>
 
-    <div class="section-title">施工現場查驗與手寫區</div>
+    <div class="section-title">施工現場查驗（大空間手寫或文字修改）</div>
     
     <div class="card" id="card_item1">
         <div class="card-title">1. 進場堆置及完成加工之堆置 (施工前)</div>
-        <label>抽查標準（可修改）：</label>
+        <label>抽查標準：</label>
         <textarea id="ui_std_1">進場鋼筋必須墊高至少10cm以上，防止鋼筋污染及銹蝕。</textarea>
-        <div class="handwrite-zone">
-            <div class="hw-box">
-                <div class="hw-title">✍️ 實際抽查情形手寫</div>
-                <div class="canvas-container"><canvas id="can_v1" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_v1')">擦除</button>
-            </div>
-            <div class="hw-box">
-                <div class="hw-title">✍️ 結果(◯/╳/／)</div>
-                <div class="canvas-container"><canvas id="can_r1" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_r1')">擦除</button>
-            </div>
+        <label>實際抽查情形文字描述 (若不手寫可直接打字)：</label>
+        <input type="text" id="ui_txt_1" placeholder="無手寫時，此處文字會直接印出">
+        <div class="hw-large-zone">
+            <div class="hw-title-row"><span class="hw-title">✍️ 或现场手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v1')">擦除</button></div>
+            <div class="canvas-container"><canvas id="can_v1" class="hw-canvas"></canvas></div>
+        </div>
+        <div class="result-btn-group">
+            <button type="button" class="res-btn" id="btn_r1_1" onclick="setResult(1, '◯', this)">◯ 合格</button>
+            <button type="button" class="res-btn" id="btn_r1_2" onclick="setResult(1, '╳', this)">╳ 缺失</button>
+            <button type="button" class="res-btn" id="btn_r1_3" onclick="setResult(1, '／', this)">／ 無此項</button>
         </div>
     </div>
 
     <div class="card" id="card_item2">
         <div class="card-title">2. 鋼筋號數 (施工中)</div>
-        <label>抽查標準（可修改）：</label>
+        <label>抽查標準：</label>
         <textarea id="ui_std_2">D10、D13、D16</textarea>
-        <div class="handwrite-zone">
-            <div class="hw-box">
-                <div class="hw-title">✍️ 實際抽查情形手寫</div>
-                <div class="canvas-container"><canvas id="can_v2" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_v2')">擦除</button>
-            </div>
-            <div class="hw-box">
-                <div class="hw-title">✍️ 結果(◯/╳/／)</div>
-                <div class="canvas-container"><canvas id="can_r2" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_r2')">擦除</button>
-            </div>
+        <label>實際抽查情形文字描述：</label>
+        <input type="text" id="ui_txt_2">
+        <div class="hw-large-zone">
+            <div class="hw-title-row"><span class="hw-title">✍️ 現場手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v2')">擦除</button></div>
+            <div class="canvas-container"><canvas id="can_v2" class="hw-canvas"></canvas></div>
+        </div>
+        <div class="result-btn-group">
+            <button type="button" class="res-btn" id="btn_r2_1" onclick="setResult(2, '◯', this)">◯ 合格</button>
+            <button type="button" class="res-btn" id="btn_r2_2" onclick="setResult(2, '╳', this)">╳ 缺失</button>
+            <button type="button" class="res-btn" id="btn_r2_3" onclick="setResult(2, '／', this)">／ 無此項</button>
         </div>
     </div>
 
-    <div class="card" id="card_item3_1">
-        <div class="card-title">3-1. 主筋間距 (施工中)</div>
-        <label>抽查標準（可修改）：</label>
-        <textarea id="ui_std_3_1">D____@____cm，D____-____支(依設計圖說)，(各間距允差值：最小間距-6mm)</textarea>
-        <div class="handwrite-zone">
-            <div class="hw-box">
-                <div class="hw-title">✍️ 實際抽查情形手寫</div>
-                <div class="canvas-container"><canvas id="can_v3_1" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_v3_1')">擦除</button>
-            </div>
-            <div class="hw-box">
-                <div class="hw-title">✍️ 結果(◯/╳/／)</div>
-                <div class="canvas-container"><canvas id="can_r3_1" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_r3_1')">擦除</button>
-            </div>
+    <div class="card" id="card_item3">
+        <div class="card-title">3. 鋼筋間距 (施工中)</div>
+        <label>抽查標準：</label>
+        <textarea id="ui_std_3">D____@____cm，D____-____支(依設計圖說)，(各間距允差值：最小間距-6mm)</textarea>
+        <label>實際抽查情形文字描述：</label>
+        <input type="text" id="ui_txt_3">
+        <div class="hw-large-zone">
+            <div class="hw-title-row"><span class="hw-title">✍️ 現場手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v3')">擦除</button></div>
+            <div class="canvas-container"><canvas id="can_v3" class="hw-canvas"></canvas></div>
+        </div>
+        <div class="result-btn-group">
+            <button type="button" class="res-btn" id="btn_r3_1" onclick="setResult(3, '◯', this)">◯ 合格</button>
+            <button type="button" class="res-btn" id="btn_r3_2" onclick="setResult(3, '╳', this)">╳ 缺失</button>
+            <button type="button" class="res-btn" id="btn_r3_3" onclick="setResult(3, '／', this)">／ 無此項</button>
         </div>
         <div class="photo-upload">
-            <label>📷 檢附照片：主筋間距照片</label>
+            <label>📷 檢附照片 1：主筋間距照片</label>
             <input type="file" accept="image/*" onchange="previewImage(this, 'p_img_main')">
             <img id="p_img_main" class="photo-preview">
         </div>
-    </div>
-
-    <div class="card" id="card_item3_2">
-        <div class="card-title">3-2. 副筋間距 (施工中)</div>
-        <label>抽查標準（可修改）：</label>
-        <textarea id="ui_std_3_2">D____@____cm，D____-____支(依設計圖說)，(各間距允差值：最小間距-6mm)</textarea>
-        <div class="handwrite-zone">
-            <div class="hw-box">
-                <div class="hw-title">✍️ 實際抽查情形手寫</div>
-                <div class="canvas-container"><canvas id="can_v3_2" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_v3_2')">擦除</button>
-            </div>
-            <div class="hw-box">
-                <div class="hw-title">✍️ 結果(◯/╳/／)</div>
-                <div class="canvas-container"><canvas id="can_r3_2" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_r3_2')">擦除</button>
-            </div>
-        </div>
-        <div class="photo-upload">
-            <label>📷 檢附照片：副筋間距照片</label>
+        <div class="photo-upload" style="margin-top:5px;">
+            <label>📷 檢附照片 2：副筋間距照片</label>
             <input type="file" accept="image/*" onchange="previewImage(this, 'p_img_sub')">
             <img id="p_img_sub" class="photo-preview">
         </div>
@@ -178,37 +178,35 @@
 
     <div class="card" id="card_item4">
         <div class="card-title">4. 鋼筋綁紮 (施工中)</div>
-        <label>抽查標準（可修改）：</label>
+        <label>抽查標準：</label>
         <textarea id="ui_std_4">以鐵絲加固，□逐步綁紮(鋼筋間隔≧20cm)，□跳步綁紮(鋼筋間隔<20cm)，鋼筋綁紮是否牢固無脫落</textarea>
-        <div class="handwrite-zone">
-            <div class="hw-box">
-                <div class="hw-title">✍️ 實際抽查情形手寫</div>
-                <div class="canvas-container"><canvas id="can_v4" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_v4')">擦除</button>
-            </div>
-            <div class="hw-box">
-                <div class="hw-title">✍️ 結果(◯/╳/／)</div>
-                <div class="canvas-container"><canvas id="can_r4" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_r4')">擦除</button>
-            </div>
+        <label>實際抽查情形文字描述：</label>
+        <input type="text" id="ui_txt_4">
+        <div class="hw-large-zone">
+            <div class="hw-title-row"><span class="hw-title">✍️ 現場手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v4')">擦除</button></div>
+            <div class="canvas-container"><canvas id="can_v4" class="hw-canvas"></canvas></div>
+        </div>
+        <div class="result-btn-group">
+            <button type="button" class="res-btn" id="btn_r4_1" onclick="setResult(4, '◯', this)">◯ 合格</button>
+            <button type="button" class="res-btn" id="btn_r4_2" onclick="setResult(4, '╳', this)">╳ 缺失</button>
+            <button type="button" class="res-btn" id="btn_r4_3" onclick="setResult(4, '／', this)">／ 無此項</button>
         </div>
     </div>
 
     <div class="card" id="card_item5">
         <div class="card-title">5. 保護層 (施工中)</div>
-        <label>抽查標準（可修改）：</label>
+        <label>抽查標準：</label>
         <textarea id="ui_std_5">□一般為5cm+0.6cm，□與土壤及水接觸者為7.5cm+0.6cm</textarea>
-        <div class="handwrite-zone">
-            <div class="hw-box">
-                <div class="hw-title">✍️ 實際抽查情形手寫</div>
-                <div class="canvas-container"><canvas id="can_v5" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_v5')">擦除</button>
-            </div>
-            <div class="hw-box">
-                <div class="hw-title">✍️ 結果(◯/╳/／)</div>
-                <div class="canvas-container"><canvas id="can_r5" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_v5')">擦除</button>
-            </div>
+        <label>實際抽查情形文字描述：</label>
+        <input type="text" id="ui_txt_5">
+        <div class="hw-large-zone">
+            <div class="hw-title-row"><span class="hw-title">✍️ 現場手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v5')">擦除</button></div>
+            <div class="canvas-container"><canvas id="can_v5" class="hw-canvas"></canvas></div>
+        </div>
+        <div class="result-btn-group">
+            <button type="button" class="res-btn" id="btn_r5_1" onclick="setResult(5, '◯', this)">◯ 合格</button>
+            <button type="button" class="res-btn" id="btn_r5_2" onclick="setResult(5, '╳', this)">╳ 缺失</button>
+            <button type="button" class="res-btn" id="btn_r5_3" onclick="setResult(5, '／', this)">／ 無此項</button>
         </div>
         <div class="photo-upload">
             <label>📷 檢附照片：保護層量測照片</label>
@@ -219,19 +217,18 @@
 
     <div class="card" id="card_item6">
         <div class="card-title">6. 鋼筋墊塊 (施工中)</div>
-        <label>抽查標準（可修改）：</label>
+        <label>抽查標準：</label>
         <textarea id="ui_std_6">鋼筋墊塊：D10鋼筋≦60cm，D13鋼筋≦80cm，D16鋼筋≦100cm，水泥砂漿墊塊之強度須大於所澆置混凝土之強度。</textarea>
-        <div class="handwrite-zone">
-            <div class="hw-box">
-                <div class="hw-title">✍️ 實際抽查情形手寫</div>
-                <div class="canvas-container"><canvas id="can_v6" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_v6')">擦除</button>
-            </div>
-            <div class="hw-box">
-                <div class="hw-title">✍️ 結果(◯/╳/／)</div>
-                <div class="canvas-container"><canvas id="can_r6" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_r6')">擦除</button>
-            </div>
+        <label>實際抽查情形文字描述：</label>
+        <input type="text" id="ui_txt_6">
+        <div class="hw-large-zone">
+            <div class="hw-title-row"><span class="hw-title">✍️ 現場手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v6')">擦除</button></div>
+            <div class="canvas-container"><canvas id="can_v6" class="hw-canvas"></canvas></div>
+        </div>
+        <div class="result-btn-group">
+            <button type="button" class="res-btn" id="btn_r6_1" onclick="setResult(6, '◯', this)">◯ 合格</button>
+            <button type="button" class="res-btn" id="btn_r6_2" onclick="setResult(6, '╳', this)">╳ 缺失</button>
+            <button type="button" class="res-btn" id="btn_r6_3" onclick="setResult(6, '／', this)">／ 無此項</button>
         </div>
         <div class="photo-upload">
             <label>📷 檢附照片：鋼筋墊塊配置照片</label>
@@ -242,19 +239,18 @@
 
     <div class="card" id="card_item7">
         <div class="card-title">7. 搭接長度 (施工中)</div>
-        <label>抽查標準（可修改）：</label>
+        <label>抽查標準：</label>
         <textarea id="ui_std_7">D10搭接≧40cm，D13搭接≧52cm，D16搭接≧64cm，同一搭接斷面鋼筋量不得超過1/2</textarea>
-        <div class="handwrite-zone">
-            <div class="hw-box">
-                <div class="hw-title">✍️ 實際抽查情形手寫</div>
-                <div class="canvas-container"><canvas id="can_v7" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_v7')">擦除</button>
-            </div>
-            <div class="hw-box">
-                <div class="hw-title">✍️ 結果(◯/╳/／)</div>
-                <div class="canvas-container"><canvas id="can_r7" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_r7')">擦除</button>
-            </div>
+        <label>實際抽查情形文字描述：</label>
+        <input type="text" id="ui_txt_7">
+        <div class="hw-large-zone">
+            <div class="hw-title-row"><span class="hw-title">✍️ 現場手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v7')">擦除</button></div>
+            <div class="canvas-container"><canvas id="can_v7" class="hw-canvas"></canvas></div>
+        </div>
+        <div class="result-btn-group">
+            <button type="button" class="res-btn" id="btn_r7_1" onclick="setResult(7, '◯', this)">◯ 合格</button>
+            <button type="button" class="res-btn" id="btn_r7_2" onclick="setResult(7, '╳', this)">╳ 缺失</button>
+            <button type="button" class="res-btn" id="btn_r7_3" onclick="setResult(7, '／', this)">／ 無此項</button>
         </div>
         <div class="photo-upload">
             <label>📷 檢附照片：搭接長度量測照片</label>
@@ -265,19 +261,18 @@
 
     <div class="card" id="card_item8">
         <div class="card-title">8. 開口補強筋 (施工中)</div>
-        <label>抽查標準（可修改）：</label>
+        <label>抽查標準：</label>
         <textarea id="ui_std_8">2-D13 L=(依設計圖說)，側溝蓋兩側(平行道路)，2-D13 L=(依設計圖說)m，側溝蓋兩側(垂直道路)，2-D13 L=(依設計圖說)設置角落四邊</textarea>
-        <div class="handwrite-zone">
-            <div class="hw-box">
-                <div class="hw-title">✍️ 實際抽查情形手寫</div>
-                <div class="canvas-container"><canvas id="can_v8" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_v8')">擦除</button>
-            </div>
-            <div class="hw-box">
-                <div class="hw-title">✍️ 結果(◯/╳/／)</div>
-                <div class="canvas-container"><canvas id="can_r8" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_r8')">擦除</button>
-            </div>
+        <label>實際抽查情形文字描述：</label>
+        <input type="text" id="ui_txt_8">
+        <div class="hw-large-zone">
+            <div class="hw-title-row"><span class="hw-title">✍️ 現場手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v8')">擦除</button></div>
+            <div class="canvas-container"><canvas id="can_v8" class="hw-canvas"></canvas></div>
+        </div>
+        <div class="result-btn-group">
+            <button type="button" class="res-btn" id="btn_r8_1" onclick="setResult(8, '◯', this)">◯ 合格</button>
+            <button type="button" class="res-btn" id="btn_r8_2" onclick="setResult(8, '╳', this)">╳ 缺失</button>
+            <button type="button" class="res-btn" id="btn_r8_3" onclick="setResult(8, '／', this)">／ 無此項</button>
         </div>
         <div class="photo-upload">
             <label>📷 檢附照片：開口補強照片 1</label>
@@ -293,109 +288,95 @@
 
     <div class="card" id="card_item9">
         <div class="card-title">9. 平直度 (施工後)</div>
-        <label>抽查標準（可修改）：</label>
+        <label>抽查標準：</label>
         <textarea id="ui_std_9">有無水平移位或垂直變形</textarea>
-        <div class="handwrite-zone">
-            <div class="hw-box">
-                <div class="hw-title">✍️ 實際抽查情形手寫</div>
-                <div class="canvas-container"><canvas id="can_v9" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_v9')">擦除</button>
-            </div>
-            <div class="hw-box">
-                <div class="hw-title">✍️ 結果(◯/╳/／)</div>
-                <div class="canvas-container"><canvas id="can_r9" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_r9')">擦除</button>
-            </div>
+        <label>實際抽查情形文字描述：</label>
+        <input type="text" id="ui_txt_9">
+        <div class="hw-large-zone">
+            <div class="hw-title-row"><span class="hw-title">✍️ 現場手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v9')">擦除</button></div>
+            <div class="canvas-container"><canvas id="can_v9" class="hw-canvas"></canvas></div>
+        </div>
+        <div class="result-btn-group">
+            <button type="button" class="res-btn" id="btn_r9_1" onclick="setResult(9, '◯', this)">◯ 合格</button>
+            <button type="button" class="res-btn" id="btn_r9_2" onclick="setResult(9, '╳', this)">╳ 缺失</button>
+            <button type="button" class="res-btn" id="btn_r9_3" onclick="setResult(9, '／', this)">／ 無此項</button>
         </div>
     </div>
 
     <div class="card" id="card_item10">
         <div class="card-title">10. 鋼筋表面處理 (施工後)</div>
-        <label>抽查標準（可修改）：</label>
+        <label>抽查標準：</label>
         <textarea id="ui_std_10">無銹蝕、油污、水泥漿等雜物</textarea>
-        <div class="handwrite-zone">
-            <div class="hw-box">
-                <div class="hw-title">✍️ 實際抽查情形手寫</div>
-                <div class="canvas-container"><canvas id="can_v10" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_v10')">擦除</button>
-            </div>
-            <div class="hw-box">
-                <div class="hw-title">✍️ 結果(◯/╳/／)</div>
-                <div class="canvas-container"><canvas id="can_r10" class="hw-canvas"></canvas></div>
-                <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_r10')">擦除</button>
-            </div>
+        <label>實際抽查情形文字描述：</label>
+        <input type="text" id="ui_txt_10">
+        <div class="hw-large-zone">
+            <div class="hw-title-row"><span class="hw-title">✍️ 現場手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v10')">擦除</button></div>
+            <div class="canvas-container"><canvas id="can_v10" class="hw-canvas"></canvas></div>
+        </div>
+        <div class="result-btn-group">
+            <button type="button" class="res-btn" id="btn_r10_1" onclick="setResult(10, '◯', this)">◯ 合格</button>
+            <button type="button" class="res-btn" id="btn_r10_2" onclick="setResult(10, '╳', this)">╳ 缺失</button>
+            <button type="button" class="res-btn" id="btn_r10_3" onclick="setResult(10, '／', this)">／ 無此項</button>
         </div>
     </div>
 
     <div class="section-title">缺失複查與簽章設定</div>
     <div class="card">
         <div class="checkbox-group" style="border:none; padding:0;">
-            <label><input type="checkbox" id="ui_rev_ok"> ☑ 無缺失項目，免填複查欄位。</label>
-            <label><input type="checkbox" id="ui_rev_done"> □ 已完成改善（抽附改善前中後照片）</label>
-            <label><input type="checkbox" id="ui_rev_track"> □ 未完成改善，填具「缺失改善追蹤表」</label>
+            <label><input type="checkbox" id="ui_rev_done"> ☑ 已完成改善（抽附改善前中後照片）</label>
+            <label><input type="checkbox" id="ui_rev_track"> □ 未完成改善，填具「缺失改善追蹤表」進行追蹤改善</label>
         </div>
         <div class="form-group" style="margin-top:10px;">
             <label>複查日期填寫：</label>
-            <input type="text" id="ui_rev_date" placeholder="例如：115 年 06 月 04 日">
+            <input type="text" id="ui_rev_date" value="115 年 06 月 04 日">
         </div>
     </div>
 
-    <div class="card">
-        <label>監造現場人員簽名：</label>
-        <div class="canvas-container"><canvas id="can_sig1" style="height:120px;"></canvas></div>
-        <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_sig1')" style="padding:5px;">清除重簽</button>
-    </div>
-    <div class="card">
-        <label>監造工地負責(授權)人簽名：</label>
-        <div class="canvas-container"><canvas id="can_sig2" style="height:120px;"></canvas></div>
-        <button type="button" class="btn-clear-sm" onclick="clearCanvas('can_sig2')" style="padding:5px;">清除重簽</button>
-    </div>
-
-    <button type="button" class="submit-btn" onclick="generateWordPDF()">🖨️ 產生與 Word 一致抽查紀錄表 (PDF)</button>
+    <button type="button" class="submit-btn" onclick="generateWordPDF()">🖨️ 產生與 Word 100% 一致抽查紀錄表 (PDF)</button>
 </div>
 
 
 <div id="word-print-layout">
-    <div class="print-title">表7.3.1鋼筋工程抽查紀錄表</div>
-    <div class="print-no">編號：EA- <span id="lbl_print_no"></span></div>
+    <div class="print-title">表 7.3.1 鋼筋工程抽查紀錄表</div>
+    <div class="print-no">編號：EA-<span id="lbl_print_no">1150604 - 01</span></div>
     
     <table class="word-table">
         <colgroup>
-            <col style="width: 12%;">
+            <col style="width: 15%;">
             <col style="width: 20%;">
-            <col style="width: 42%;">
-            <col style="width: 18%;">
-            <col style="width: 8%;">
+            <col style="width: 43%;">
+            <col style="width: 15%;">
+            <col style="width: 7%;">
         </colgroup>
         <tr>
-            <td class="bg-gray text-center">工程名稱</td>
+            <td class="text-center text-bold bg-gray">工程名稱</td>
             <td colspan="4">桃園市龍潭區雙龍國小校園周邊暨行車安全道路改善工程</td>
         </tr>
         <tr>
-            <td class="bg-gray text-center">分項工程名稱</td>
-            <td colspan="4" id="td_sub_eng"></td>
+            <td class="text-center text-bold bg-gray">分項工程名稱</td>
+            <td colspan="4" id="td_sub_eng">人行道工程</td>
         </tr>
         <tr>
-            <td class="bg-gray text-center">抽查位置</td>
-            <td id="td_location"></td>
-            <td class="bg-gray text-center">抽查日期</td>
-            <td colspan="2" id="td_date"></td>
+            <td class="text-center text-bold bg-gray">抽查位置</td>
+            <td id="td_location">神龍路 347 巷 B0K+005~130(人行道底板)</td>
+            <td class="text-center text-bold bg-gray">抽查日期</td>
+            <td colspan="2" id="td_date">115 年 06 月 04 日</td>
         </tr>
         <tr>
-            <td class="bg-gray text-center">施工流程</td>
+            <td class="text-center text-bold bg-gray">施工流程</td>
             <td colspan="4">
-                <span id="p_flow_b">□</span>施工前 &nbsp;&nbsp;&nbsp;&nbsp;
-                <span id="p_flow_d">□</span>施工中抽查 &nbsp;&nbsp;&nbsp;&nbsp;
+                <span id="p_flow_b">□</span>施工前&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span id="p_flow_d">☑</span>施工中抽查&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <span id="p_flow_a">□</span>施工完成抽查
             </td>
         </tr>
         <tr>
-            <td class="bg-gray text-center">抽查結果</td>
+            <td class="text-center text-bold bg-gray">抽查結果</td>
             <td colspan="4">
-                ○ 抽查合格 &nbsp;&nbsp;&nbsp;&nbsp; ╳ 有缺失需改正 &nbsp;&nbsp;&nbsp;&nbsp; ／無此抽查項目
+                ○ 抽查合格&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ╳ 有缺失需改正&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ／ 無此抽查項目
             </td>
         </tr>
-        <tr class="bg-gray text-center" style="font-weight:bold;">
+        <tr class="text-center text-bold bg-gray">
             <td colspan="2">抽查項目</td>
             <td>抽查標準（定量定性）</td>
             <td>實際抽查情形<br>（敘述抽查值）</td>
@@ -403,94 +384,87 @@
         </tr>
         
         <tr>
-            <td class="text-center" style="font-weight:bold;">施工前</td>
+            <td class="text-center text-bold" style="font-size:11pt;">施工前</td>
             <td>進場堆置及完成加工之堆置</td>
-            <td id="pt_std_1"></td>
+            <td id="pt_std_1">進場鋼筋必須墊高至少10cm以上，防止鋼筋污染及銹蝕。</td>
             <td id="pt_v1_box"></td>
-            <td id="pt_r1_box"></td>
+            <td class="text-center"><span id="pt_r1_val" class="print-res-text"></span></td>
         </tr>
         
         <tr>
-            <td class="text-center" rowspan="7" style="font-weight:bold;">施工中</td>
+            <td class="text-center text-bold" rowspan="7" style="font-size:11pt;">施工中</td>
             <td>鋼筋號數</td>
-            <td id="pt_std_2"></td>
+            <td id="pt_std_2">D10、D13、D16</td>
             <td id="pt_v2_box"></td>
-            <td id="pt_r2_box"></td>
+            <td class="text-center"><span id="pt_r2_val" class="print-res-text"></span></td>
         </tr>
         <tr>
-            <td>鋼筋間距 (主筋)</td>
-            <td id="pt_std_3_1"></td>
-            <td id="pt_v3_1_box"></td>
-            <td id="pt_r3_1_box"></td>
-        </tr>
-        <tr>
-            <td>鋼筋間距 (副筋)</td>
-            <td id="pt_std_3_2"></td>
-            <td id="pt_v3_2_box"></td>
-            <td id="pt_r3_2_box"></td>
+            <td>鋼筋間距</td>
+            <td id="pt_std_3">D____@____cm，D____-____支(依設計圖說)，(各間距允差值：最小間距-6mm)</td>
+            <td id="pt_v3_box"></td>
+            <td class="text-center"><span id="pt_r3_val" class="print-res-text"></span></td>
         </tr>
         <tr>
             <td>鋼筋綁紮</td>
-            <td id="pt_std_4"></td>
+            <td id="pt_std_4">以鐵絲加固，□逐步綁紮(鋼筋間隔≧20cm)，□跳步綁紮(鋼筋間隔&lt;20cm)，鋼筋綁紮是否牢固無脫落</td>
             <td id="pt_v4_box"></td>
-            <td id="pt_r4_box"></td>
+            <td class="text-center"><span id="pt_r4_val" class="print-res-text"></span></td>
         </tr>
         <tr>
             <td>保護層</td>
-            <td id="pt_std_5"></td>
+            <td id="pt_std_5">□一般為5cm+0.6cm，□與土壤及水接觸者為7.5cm+0.6cm</td>
             <td id="pt_v5_box"></td>
-            <td id="pt_r5_box"></td>
+            <td class="text-center"><span id="pt_r5_val" class="print-res-text"></span></td>
         </tr>
         <tr>
             <td>鋼筋墊塊</td>
-            <td id="pt_std_6"></td>
+            <td id="pt_std_6">鋼筋墊塊：D10鋼筋≦60cm，D13鋼筋≦80cm，D16鋼筋≦100cm，水泥砂漿墊塊之強度須大於所澆置混凝土之強度。</td>
             <td id="pt_v6_box"></td>
-            <td id="pt_r6_box"></td>
+            <td class="text-center"><span id="pt_r6_val" class="print-res-text"></span></td>
         </tr>
         <tr>
             <td>搭接長度</td>
-            <td id="pt_std_7"></td>
+            <td id="pt_std_7">D10搭接≧40cm，D13搭接≧52cm，D16搭接≧64cm，同一搭接斷面鋼筋量不得超過1/2</td>
             <td id="pt_v7_box"></td>
-            <td id="pt_r7_box"></td>
+            <td class="text-center"><span id="pt_r7_val" class="print-res-text"></span></td>
         </tr>
         <tr>
-            <td class="text-center" style="font-weight:bold;">施工中/後</td>
+            <td class="text-center text-bold" style="font-size:11pt;">施工中/後</td>
             <td>開口補強筋</td>
-            <td id="pt_std_8"></td>
+            <td id="pt_std_8">2-D13 L=(依設計圖說)，側溝蓋兩側(平行道路)，2-D13 L=(依設計圖說)m，側溝蓋兩側(垂直道路)，2-D13 L=(依設計圖說)設置角落四邊</td>
             <td id="pt_v8_box"></td>
-            <td id="pt_r8_box"></td>
+            <td class="text-center"><span id="pt_r8_val" class="print-res-text"></span></td>
         </tr>
         <tr>
-            <td class="text-center" rowspan="2" style="font-weight:bold;">施工後</td>
+            <td class="text-center text-bold" rowspan="2" style="font-size:11pt;">施工後</td>
             <td>平直度</td>
-            <td id="pt_std_9"></td>
+            <td id="pt_std_9">有無水平移位或垂直變形</td>
             <td id="pt_v9_box"></td>
-            <td id="pt_r9_box"></td>
+            <td class="text-center"><span id="pt_r9_val" class="print-res-text"></span></td>
         </tr>
         <tr>
             <td>鋼筋表面處理</td>
-            <td id="pt_std_10"></td>
+            <td id="pt_std_10">無銹蝕、油污、水泥漿等雜物</td>
             <td id="pt_v10_box"></td>
-            <td id="pt_r10_box"></td>
+            <td class="text-center"><span id="pt_r10_val" class="print-res-text"></span></td>
         </tr>
         
         <tr>
-            <td colspan="2" class="bg-gray text-center">工地職業安全衛生</td>
+            <td colspan="2" class="text-center text-bold bg-gray">工地職業安全衛生</td>
             <td colspan="3">依桃園市政府所屬各機關公共工程職業安全衛生須知第十五點填寫一般性作業安全衛生抽查表</td>
         </tr>
         <tr>
-            <td class="bg-gray text-center">缺失複查結果</td>
+            <td class="text-center text-bold bg-gray">缺失複查結果：</td>
             <td colspan="4">
-                <span id="p_rev_ok">□</span> 無缺失項目，免填複查欄位。<br>
-                <span id="p_rev_done">□</span> 已完成改善（抽附改善前中後照片） &nbsp;&nbsp;&nbsp;&nbsp; 
-                <span id="p_rev_track">□</span> 未完成改善，填具「缺失改善追蹤表」<br>
-                複查日期：<span id="pt_rev_date">  年  月  日</span> &nbsp;&nbsp;&nbsp;&nbsp; 複查人員簽名：
+                <span id="p_rev_done">☑</span> 已完成改善（抽附改善前中後照片） <br>
+                <span id="p_rev_track">□</span> 未完成改善，填具「缺失改善追蹤表」進行追蹤改善 <br>
+                <span style="display:inline-block; margin-top:5px;">複查日期：<span id="pt_rev_date">115 年 06 月 04 日</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 複查人員職稱： 監造工程師 &nbsp;&nbsp;&nbsp;&nbsp; 簽名：</span>
             </td>
         </tr>
         <tr>
-            <td class="bg-gray text-center">備註</td>
-            <td colspan="4" style="font-size:8.5pt; color:#222; line-height: 1.35;">
-                1. 抽查標準及實際抽查情形應具體明確或量化尺寸。<br>
+            <td class="text-bold bg-gray">備註：</td>
+            <td colspan="4" style="font-size:9pt; line-height: 1.4; font-family: 'SimSun';">
+                1. 抽查標準及實際抽查情形應具體明確（例：磚砌完成後須不透光）或量化尺寸（例：磚縫7mm~10mm）。<br>
                 2. 抽查結果合格者註明「 ○ 」，不合格者註明「 ╳ 」，如無需抽查之項目則打「／」。<br>
                 3. 本表由監造工地現場人員實地抽查後覈實記載簽認。
             </td>
@@ -498,36 +472,76 @@
     </table>
 
     <div class="sig-row">
-        <div style="width: 50%;">
-            監造工地負責(授權)人：
-            <div class="sig-box-print" id="p_sig2_area"></div>
-        </div>
-        <div style="width: 50%;">
-            監造現場人員簽名：
-            <div class="sig-box-print" id="p_sig1_area"></div>
-        </div>
+        <div>監造工地負責(授權)人：<div class="sig-box-print" id="p_sig2_area"></div></div>
+        <div>監造現場人員簽名：<div class="sig-box-print" id="p_sig1_area"></div></div>
     </div>
 
     <div id="print-photo-section" class="page-break">
         <div class="photo-report-title">鋼筋工程 現場抽查照片紀錄表</div>
-        <table class="photo-grid-table" id="photo_table_grid">
-            </table>
+        <table class="photo-grid-table" id="photo_table_grid"></table>
     </div>
 </div>
 
 <script>
-    // 建立一個整合型圖片與手寫數據儲存庫，防止 Canvas 動態清空問題
     const appData = {
         photos: {},
-        canvasData: {}
+        canvasData: {},
+        results: {}
     };
 
-    // 全域註冊所有需要初始化的 Canvas IDs
-    const allCanvasIds = [
-        'can_v1','can_r1','can_v2','can_r2','can_v3_1','can_r3_1','can_v3_2','can_r3_2',
-        'can_v4','can_r4','can_v5','can_r5','can_v6','can_r6','can_v7','can_r7',
-        'can_v8','can_r8','can_v9','can_r9','can_v10','can_r10','can_sig1','can_sig2'
-    ];
+    const itemKeys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+
+    // ⚡ 核心功能：帶入歷史 JSON 數據文字，免現場重複打字
+    function loadJSONData() {
+        document.getElementById('ui_txt_1').value = ""; 
+        setResultByValue(1, '／');
+        
+        document.getElementById('ui_txt_2').value = "主筋 D13，副筋 D13"; 
+        setResultByValue(2, '◯');
+        
+        document.getElementById('ui_txt_3').value = "主筋 74cm內 6支(平均14.8cm)；副筋 59cm內 5支(平均14.8cm)"; 
+        setResultByValue(3, '◯');
+        
+        document.getElementById('ui_txt_4').value = "鐵絲紮實牢固，無鬆脫現象"; 
+        setResultByValue(4, '◯');
+        
+        document.getElementById('ui_txt_5').value = "現場量測 5.1 cm"; 
+        setResultByValue(5, '◯');
+        
+        document.getElementById('ui_txt_6').value = "墊塊間距 75cm"; 
+        setResultByValue(6, '◯');
+        
+        document.getElementById('ui_txt_7').value = "D13搭接長度符合規範"; 
+        setResultByValue(7, '◯');
+        
+        document.getElementById('ui_txt_8').value = "側溝蓋開口四角已綁紮補強筋"; 
+        setResultByValue(8, '◯');
+        
+        document.getElementById('ui_txt_9').value = ""; 
+        setResultByValue(9, '／');
+        
+        document.getElementById('ui_txt_10').value = ""; 
+        setResultByValue(10, '／');
+        
+        alert('已成功自動填入歷史 JSON 抽查數值！如有手寫，手寫圖片會優先覆蓋文字。');
+    }
+
+    function setResultByValue(itemIndex, val) {
+        let btnIdx = (val === '◯') ? 1 : (val === '╳' ? 2 : 3);
+        let targetBtn = document.getElementById(`btn_r${itemIndex}_${btnIdx}`);
+        if(targetBtn) setResult(itemIndex, val, targetBtn);
+    }
+
+    function setResult(itemIndex, value, btnNode) {
+        appData.results[itemIndex] = value;
+        const parent = btnNode.parentElement;
+        parent.querySelectorAll('.res-btn').forEach(b => {
+            b.classList.remove('active-ok', 'active-ng', 'active-na');
+        });
+        if (value === '◯') btnNode.classList.add('active-ok');
+        if (value === '╳') btnNode.classList.add('active-ng');
+        if (value === '／') btnNode.classList.add('active-na');
+    }
 
     function previewImage(input, id) {
         const file = input.files[0];
@@ -536,65 +550,50 @@
             reader.onload = function(e) {
                 document.getElementById(id).src = e.target.result;
                 document.getElementById(id).style.display = 'block';
-                appData.photos[id] = e.target.result; // 快取照片數據
+                appData.photos[id] = e.target.result;
             }
             reader.readAsDataURL(file);
         }
     }
 
-    // 觸控與滑鼠手寫板引擎
     function setupCanvas(id) {
         const canvas = document.getElementById(id);
         if(!canvas) return;
         const ctx = canvas.getContext('2d');
-        
-        // 自動適應外層響應式容器寬度
         canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.id.includes('sig') ? 120 : 90;
-        
-        ctx.lineWidth = 2.5; 
-        ctx.lineCap = 'round'; 
-        ctx.strokeStyle = '#000000';
-        
+        canvas.height = 110;
+        ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.strokeStyle = '#000000';
         let drawing = false;
+
         const getPos = (e) => {
             const rect = canvas.getBoundingClientRect();
             let cv = e.touches ? e.touches[0] : e;
             return { x: cv.clientX - rect.left, y: cv.clientY - rect.top };
         };
 
-        const commitData = () => {
-            const blank = document.createElement('canvas');
-            blank.width = canvas.width; blank.height = canvas.height;
-            if (canvas.toDataURL() !== blank.toDataURL()) {
-                appData.canvasData[id] = canvas.toDataURL(); // 即時壓入暫存
-            }
-        };
-
         canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); let p = getPos(e); ctx.moveTo(p.x, p.y); });
         canvas.addEventListener('mousemove', (e) => { if(!drawing)return; let p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
-        window.addEventListener('mouseup', () => { if(drawing){ drawing = false; commitData(); } });
+        window.addEventListener('mouseup', () => { if(drawing){ drawing = false; appData.canvasData[id] = canvas.toDataURL(); } });
         
         canvas.addEventListener('touchstart', (e) => { drawing = true; ctx.beginPath(); let p = getPos(e); ctx.moveTo(p.x, p.y); if(e.cancelable)e.preventDefault(); }, {passive:false});
         canvas.addEventListener('touchmove', (e) => { if(!drawing)return; let p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); if(e.cancelable)e.preventDefault(); }, {passive:false});
-        canvas.addEventListener('touchend', (e) => { if(drawing){ drawing = false; commitData(); } }, {passive:false});
+        canvas.addEventListener('touchend', (e) => { if(drawing){ drawing = false; appData.canvasData[id] = canvas.toDataURL(); } }, {passive:false});
     }
 
     function clearCanvas(id) {
         const cv = document.getElementById(id);
         if(cv) {
             cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
-            delete appData.canvasData[id]; // 同步刪除暫存，確保支援隨時改簽、改寫！
+            delete appData.canvasData[id];
         }
     }
 
     window.onload = function() {
-        allCanvasIds.forEach(id => setupCanvas(id));
+        itemKeys.forEach(k => setupCanvas('can_v' + k));
     };
 
     function generateWordPDF() {
         try {
-            // 1. 同步頂部基本填報區與自訂編號
             document.getElementById('lbl_print_no').innerText = document.getElementById('ui_no').value;
             document.getElementById('td_sub_eng').innerText = document.getElementById('ui_sub_eng').value;
             document.getElementById('td_location').innerText = document.getElementById('ui_location').value;
@@ -602,105 +601,61 @@
             const dateVal = document.getElementById('ui_date').value;
             if(dateVal) {
                 const parts = dateVal.split('-');
-                const twYear = parseInt(parts[0]) - 1911;
-                document.getElementById('td_date').innerText = `${twYear}年${parts[1]}月${parts[2]}日`;
+                document.getElementById('td_date').innerText = `${parseInt(parts[0]) - 1911} 年 ${parts[1]} 月 ${parts[2]} 日`;
             }
 
-            // 2. 施工流程動態方框控制
             document.getElementById('p_flow_b').innerText = document.getElementById('ui_flow_b').checked ? '☑' : '□';
             document.getElementById('p_flow_d').innerText = document.getElementById('ui_flow_d').checked ? '☑' : '□';
             document.getElementById('p_flow_a').innerText = document.getElementById('ui_flow_a').checked ? '☑' : '□';
 
-            // 3. 缺失複查狀態控制
-            document.getElementById('p_rev_ok').innerText = document.getElementById('ui_rev_ok').checked ? '☑' : '□';
             document.getElementById('p_rev_done').innerText = document.getElementById('ui_rev_done').checked ? '☑' : '□';
-            document.getElementById('p_rev_track').innerText = document.getElementById('ui_rev_track').checked ? '☑' : '□';
-            
-            const revDateTxt = document.getElementById('ui_rev_date').value.trim();
-            if(revDateTxt !== "") {
-                document.getElementById('pt_rev_date').innerText = revDateTxt;
-            }
+            document.getElementById('p_rev_track').innerText = document.getElementById('ui_rev_track').checked ? '□' : '□';
+            document.getElementById('pt_rev_date').innerText = document.getElementById('ui_rev_date').value;
 
-            // 4. 同步各項被修改後的「抽查標準」文字至 Word 表格內
-            const stdMap = {
-                'ui_std_1': 'pt_std_1', 'ui_std_2': 'pt_std_2', 'ui_std_3_1': 'pt_std_3_1', 'ui_std_3_2': 'pt_std_3_2',
-                'ui_std_4': 'pt_std_4', 'ui_std_5': 'pt_std_5', 'ui_std_6': 'pt_std_6', 'ui_std_7': 'pt_std_7',
-                'ui_std_8': 'pt_std_8', 'ui_std_9': 'pt_std_9', 'ui_std_10': 'pt_std_10'
-            };
-            for(let uiId in stdMap) {
-                document.getElementById(stdMap[id = uiId]).innerText = document.getElementById(uiId).value;
-            }
-
-            // 5. 將所有手寫項目(1~10)的實際情形與結果動態轉印為圖片嵌入單元格
-            const hwMappings = [
-                { v: 'can_v1', r: 'can_r1', vBox: 'pt_v1_box', rBox: 'pt_r1_box' },
-                { v: 'can_v2', r: 'can_r2', vBox: 'pt_v2_box', rBox: 'pt_r2_box' },
-                { v: 'can_v3_1', r: 'can_r3_1', vBox: 'pt_v3_1_box', rBox: 'pt_r3_1_box' },
-                { v: 'can_v3_2', r: 'can_r3_2', vBox: 'pt_v3_2_box', rBox: 'pt_r3_2_box' },
-                { v: 'can_v4', r: 'can_r4', vBox: 'pt_v4_box', rBox: 'pt_r4_box' },
-                { v: 'can_v5', r: 'can_r5', vBox: 'pt_v5_box', rBox: 'pt_r5_box' },
-                { v: 'can_v6', r: 'can_r6', vBox: 'pt_v6_box', rBox: 'pt_r6_box' },
-                { v: 'can_v7', r: 'can_r7', vBox: 'pt_v7_box', rBox: 'pt_r7_box' },
-                { v: 'can_v8', r: 'can_r8', vBox: 'pt_v8_box', rBox: 'pt_r8_box' },
-                { v: 'can_v9', r: 'can_r9', vBox: 'pt_v9_box', rBox: 'pt_r9_box' },
-                { v: 'can_v10', r: 'can_r10', vBox: 'pt_v10_box', rBox: 'pt_r10_box' }
-            ];
-
-            hwMappings.forEach(m => {
-                const vb = document.getElementById(m.vBox); vb.innerHTML = "";
-                if(appData.canvasData[m.v]) {
-                    const img = document.createElement('img'); img.src = appData.canvasData[m.v]; img.className = "print-hw-img"; vb.appendChild(img);
-                }
-                const rb = document.getElementById(m.rBox); rb.innerHTML = "";
-                if(appData.canvasData[m.r]) {
-                    const img = document.createElement('img'); img.src = appData.canvasData[m.r]; img.className = "print-hw-img"; rb.appendChild(img);
+            // 同步標準與實際結果
+            itemKeys.forEach(k => {
+                document.getElementById('pt_std_' + k).innerText = document.getElementById('ui_std_' + k).value;
+                document.getElementById('pt_r' + k + '_val').innerText = appData.results[k] || "";
+                
+                // 處理實際情形欄位：手寫板優先，無手寫則填入打字文字
+                const box = document.getElementById('pt_v' + k + '_box'); 
+                box.innerHTML = "";
+                
+                if(appData.canvasData['can_v' + k]) {
+                    const img = document.createElement('img'); 
+                    img.src = appData.canvasData['can_v' + k]; 
+                    img.className = "print-hw-img"; 
+                    box.appendChild(img);
+                } else {
+                    box.innerText = document.getElementById('ui_txt_' + k).value;
                 }
             });
 
-            // 6. 轉印底部雙簽章欄位
-            const s1 = document.getElementById('p_sig1_area'); s1.innerHTML = "";
-            if(appData.canvasData['can_sig1']) {
-                const img = document.createElement('img'); img.src = appData.canvasData['can_sig1']; img.className = "sig-img-print"; s1.appendChild(img);
-            }
-            const s2 = document.getElementById('p_sig2_area'); s2.innerHTML = "";
-            if(appData.canvasData['can_sig2']) {
-                const img = document.createElement('img'); img.src = appData.canvasData['can_sig2']; img.className = "sig-img-print"; s2.appendChild(img);
-            }
-
-            // 7. 【關鍵照片流控制】：只有當有照片上傳時，才生成對應的照片格，完全沒照片則不顯示附加頁！
+            // 處理工程照片附加頁面
             const photoConfig = [
-                { key: 'p_img_main', name: '鋼筋工程 (主筋間距)' },
-                { key: 'p_img_sub', name: '鋼筋工程 (副筋間距)' },
-                { key: 'p_img_layer', name: '鋼筋工程 (保護層量測)' },
-                { key: 'p_img_block', name: '鋼筋工程 (墊塊配置間距)' },
-                { key: 'p_img_splice', name: '鋼筋工程 (搭接長度)' },
-                { key: 'p_img_patch1', name: '鋼筋工程 (開口補強照片 1)' },
+                { key: 'p_img_main', name: '鋼筋工程 (主筋間距)' }, { key: 'p_img_sub', name: '鋼筋工程 (副筋間距)' },
+                { key: 'p_img_layer', name: '鋼筋工程 (保護層量測)' }, { key: 'p_img_block', name: '鋼筋工程 (墊塊配置間距)' },
+                { key: 'p_img_splice', name: '鋼筋工程 (搭接長度)' }, { key: 'p_img_patch1', name: '鋼筋工程 (開口補強照片 1)' },
                 { key: 'p_img_patch2', name: '鋼筋工程 (開口補強照片 2)' }
             ];
-
-            // 篩選出當下真正有上傳的照片
             const activePhotos = photoConfig.filter(p => appData.photos[p.key]);
             const photoSection = document.getElementById('print-photo-section');
             const gridTable = document.getElementById('photo_table_grid');
             gridTable.innerHTML = "";
 
             if(activePhotos.length === 0) {
-                photoSection.style.display = 'none'; // 完全沒照片，直接隱藏整頁，不留空白！
+                photoSection.style.display = 'none';
             } else {
                 photoSection.style.display = 'block';
                 let htmlBuffer = "";
-                // 每兩個照片組成一個 <tr>
                 for(let i = 0; i < activePhotos.length; i += 2) {
                     htmlBuffer += "<tr>";
-                    // 第一格
                     htmlBuffer += `<td>
                         <strong>施工位置：</strong><span>${document.getElementById('ui_location').value}</span><br>
                         <strong>工程項目：</strong>${activePhotos[i].name}<br>
                         <img src="${appData.photos[activePhotos[i].key]}" class="print-photo-img">
                         <strong>拍照日期：</strong><span>${dateVal ? dateVal.replace(/-/g, '.') : ''}</span>
                     </td>`;
-                    
-                    // 第二格（如果有的話，沒有就補一個空的 td 保持對齊）
                     if(i + 1 < activePhotos.length) {
                         htmlBuffer += `<td>
                             <strong>施工位置：</strong><span>${document.getElementById('ui_location').value}</span><br>
@@ -709,18 +664,16 @@
                             <strong>拍照日期：</strong><span>${dateVal ? dateVal.replace(/-/g, '.') : ''}</span>
                         </td>`;
                     } else {
-                        htmlBuffer += "<td style='border:1px solid #000;'></td>";
+                        htmlBuffer += "<td></td>";
                     }
                     htmlBuffer += "</tr>";
                 }
                 gridTable.innerHTML = htmlBuffer;
             }
 
-            // 啟動列印導出
-            setTimeout(() => { window.print(); }, 300);
-
+            setTimeout(() => { window.print(); }, 250);
         } catch (error) {
-            alert('整合列印時發生錯誤: ' + error.message);
+            alert('列印轉換錯誤: ' + error.message);
         }
     }
 </script>
