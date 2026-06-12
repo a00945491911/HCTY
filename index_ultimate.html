@@ -54,10 +54,10 @@
             .print-hw-img { max-height: 42px; max-width: 98%; display: block; margin: 0 auto; object-fit: contain; }
             .print-res-text { font-size: 14pt; font-weight: bold; text-align: center; display: block; }
             
-            /* 底部正式雙簽章區樣式修正 */
-            .sig-container { display: block !important; width: 100%; margin-top: 35px; }
-            .sig-row { display: flex; justify-content: space-between; font-size: 11pt; font-weight: bold; }
-            .sig-item { display: flex; align-items: flex-end; width: 48%; }
+            /* 底部正式雙簽章區（徹底解決不見的問題） */
+            .sig-container { display: block !important; visibility: visible !important; width: 100%; margin-top: 40px; page-break-inside: avoid; }
+            .sig-row { display: flex !important; justify-content: space-between !important; font-size: 11pt; font-weight: bold; color: #000 !important; }
+            .sig-item { display: flex !important; align-items: flex-end !important; width: 48%; }
             .sig-box-print { width: 160px; border-bottom: 1px solid #000; height: 35px; display: inline-block; margin-left: 5px; }
             
             .page-break { page-break-before: always; }
@@ -70,13 +70,12 @@
 </head>
 <body>
 
-<!-- 一、手機現場操作介面 -->
 <div class="container">
-    <h2>行動填報面板 (終極完全版)</h2>
+    <h2>行動填報面板 (終極代碼修復版)</h2>
     
     <div class="quick-load-panel">
         <p style="margin:0 0 8px 0; font-size:0.9rem; color:#666;">系統偵測到預填 JSON 紀錄檔：</p>
-        <button type="button" class="quick-btn" onclick="loadJSONData()">⚡ 自動帶入歷史抽查數據文字</button>
+        <button type="button" class="quick-btn" onclick="loadJSONData()">⚡ 自動帶入歷史抽查數據與簽名圖片</button>
     </div>
     
     <div class="info-block">
@@ -96,8 +95,6 @@
     </div>
 
     <div class="section-title">施工現場查驗項目</div>
-    
-    <!-- 查驗項目面板 -->
     <div id="ui-items-container"></div>
 
     <div class="section-title">缺失複查設定</div>
@@ -116,7 +113,6 @@
 </div>
 
 
-<!-- 二、PDF Word 完美還原排版樣式 -->
 <div id="word-print-layout">
     <div class="print-title">表 7.3.1 鋼筋工程抽查紀錄表</div>
     <div class="print-no">編號：EA-<span id="lbl_print_no">1150604 - 01</span></div>
@@ -182,15 +178,17 @@
         </tr>
     </table>
 
-    <!-- 正式雙簽章區（保證渲染） -->
-    <div class="sig-container">
-        <div class="sig-row">
-            <div class="sig-item">監造工地負責(授權)人：<div class="sig-box-print"></div></div>
-            <div class="sig-item">監造現場人員簽名：<div class="sig-box-print"></div></div>
+    <div class="sig-container" style="display: block !important; visibility: visible !important; margin-top: 30px;">
+        <div class="sig-row" style="display: flex !important; justify-content: space-between !important;">
+            <div class="sig-item" style="color: #000 !important; font-weight: bold;">
+                監造工地負責(授權)人：<div class="sig-box-print" id="print_sig_boss_box" style="border-bottom: 1px solid #000; width: 160px; height: 35px; display: inline-block;"></div>
+            </div>
+            <div class="sig-item" style="color: #000 !important; font-weight: bold;">
+                監造現場人員簽名：<div class="sig-box-print" id="print_sig_worker_box" style="border-bottom: 1px solid #000; width: 160px; height: 35px; display: inline-block;"></div>
+            </div>
         </div>
     </div>
 
-    <!-- 照片紀錄頁 -->
     <div id="print-photo-section" class="page-break">
         <div class="photo-report-title">鋼筋工程 現場抽查照片紀錄表</div>
         <table class="photo-grid-table" id="photo_table_grid"></table>
@@ -198,6 +196,12 @@
 </div>
 
 <script>
+    // 預載簽名圖片資料 (來自您上傳的真實 JSON)
+    const savedSignatures = {
+        worker: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAV4AAACWCAYAAACW5+B3AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAABXqADAAQAAAABAAAAlgAAAAD5wx9DAAADrElEQVR4Ae3QMQEAAADCoPVPbQ0PiEBhwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwZeBgY1EwABndCHUQAAAABJRU5ErkJggg==",
+        boss: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAV4AAACWCAYAAACW5+B3AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAABXqADAAQAAAABAAAAlgAAAAD5wx9DAAADrElEQVR4Ae3QMQEAAADCoPVPbQ0PiEBhwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwYMGDBgwIABAwZeBgY1EwABndCHUQAAAABJRU5ErkJggg=="
+    };
+
     const itemsConfig = [
         { k: "1", stage: "施工前", title: "進場堆置及完成加工之堆置", std: "進場鋼筋必須墊高至少10cm以上，防止鋼筋污染及銹蝕。" },
         { k: "2", stage: "施工中", title: "鋼筋號數", std: "D10、D13、D16" },
@@ -221,7 +225,6 @@
         let printHtml = "";
         
         itemsConfig.forEach((item, index) => {
-            // 使用純粹字串拼接，絕不使用會被跳脫污染的樣板字串
             uiHtml += '<div class="card">' +
                 '<div class="card-title">' + item.k + '. ' + item.title + ' (' + item.stage + ')</div>' +
                 '<label>抽查標準：</label>' +
@@ -229,18 +232,18 @@
                 '<label>實際抽查情形文字描述：</label>' +
                 '<input type="text" id="ui_txt_' + item.k + '">' +
                 '<div class="hw-large-zone">' +
-                    '<div class="hw-title-row"><span class="hw-title">✍️ 現場手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v' + item.k + '')">擦除</button></div>' +
+                    '<div class="hw-title-row"><span class="hw-title">✍️ 現場手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas(\'can_v' + item.k + '\')">擦除</button></div>' +
                     '<div class="canvas-container"><canvas id="can_v' + item.k + '" class="hw-canvas"></canvas></div>' +
                 '</div>' +
                 '<div class="result-btn-group">' +
-                    '<button type="button" class="res-btn" id="btn_r' + item.k + '_1" onclick="setResult(' + item.k + ', '◯', this)">◯ 合格</button>' +
-                    '<button type="button" class="res-btn" id="btn_r' + item.k + '_2" onclick="setResult(' + item.k + ', '╳', this)">╳ 缺失</button>' +
-                    '<button type="button" class="res-btn" id="btn_r' + item.k + '_3" onclick="setResult(' + item.k + ', '／', this)">／ 無此項</button>' +
+                    '<button type="button" class="res-btn" id="btn_r' + item.k + '_1" onclick="setResult(' + item.k + ', \'◯\', this)">◯ 合格</button>' +
+                    '<button type="button" class="res-btn" id="btn_r' + item.k + '_2" onclick="setResult(' + item.k + ', \'╳\', this)">╳ 缺失</button>' +
+                    '<button type="button" class="res-btn" id="btn_r' + item.k + '_3" onclick="setResult(' + item.k + ', \'／\', this)">／ 無此項</button>' +
                 '</div>' +
                 (item.hasPhoto ? 
                 ('<div class="photo-upload">' +
                     '<label>📷 檢附照片：' + item.pName + '</label>' +
-                    '<input type="file" accept="image/*" onchange="previewImage(this, '' + item.pId + '')">' +
+                    '<input type="file" accept="image/*" onchange="previewImage(this, \'' + item.pId + '\')">' +
                     '<img id="' + item.pId + '" class="photo-preview">' +
                 '</div>') : '') +
             '</div>';
@@ -263,11 +266,11 @@
         uiContainer.innerHTML = uiHtml;
         printBody.innerHTML = printHtml;
         
-        // 綁定畫布
         itemsConfig.forEach(item => setupCanvas('can_v' + item.k));
     };
 
     function loadJSONData() {
+        // 帶入上傳的 JSON 資料文字
         document.getElementById('ui_txt_1').value = ""; setResultByValue(1, '／');
         document.getElementById('ui_txt_2').value = "主筋 D13，副筋 D13"; setResultByValue(2, '◯');
         document.getElementById('ui_txt_3').value = "主筋 74cm內 6支(平均14.8cm)；副筋 59cm內 5支(平均14.8cm)"; setResultByValue(3, '◯');
@@ -278,7 +281,12 @@
         document.getElementById('ui_txt_8').value = "側溝蓋開口四角已綁紮補強筋"; setResultByValue(8, '◯');
         document.getElementById('ui_txt_9').value = ""; setResultByValue(9, '／');
         document.getElementById('ui_txt_10').value = ""; setResultByValue(10, '／');
-        alert('已成功自動填入歷史 JSON 抽查數值！');
+
+        // 把預載的雙簽名數據綁定進列印欄位
+        appData.savedWorkerSig = savedSignatures.worker;
+        appData.savedBossSig = savedSignatures.boss;
+
+        alert('已成功自動帶入歷史 JSON 數據與雙人簽名！');
     }
 
     function setResultByValue(itemIndex, val) {
@@ -378,6 +386,21 @@
                 }
             });
 
+            // 渲染正式雙簽章區域裡面的簽名圖片（如果有按自動帶入的話）
+            const wBox = document.getElementById('print_sig_worker_box');
+            const bBox = document.getElementById('print_sig_boss_box');
+            wBox.innerHTML = ""; bBox.innerHTML = "";
+            
+            if(appData.savedWorkerSig) {
+                let imgW = document.createElement('img'); imgW.src = appData.savedWorkerSig;
+                imgW.style.maxHeight = "32px"; wBox.appendChild(imgW);
+            }
+            if(appData.savedBossSig) {
+                let imgB = document.createElement('img'); imgB.src = appData.savedBossSig;
+                imgB.style.maxHeight = "32px"; bBox.appendChild(imgB);
+            }
+
+            // 照片格處理
             const activePhotos = itemsConfig.filter(item => item.hasPhoto && appData.photos[item.pId]);
             const photoSection = document.getElementById('print-photo-section');
             const gridTable = document.getElementById('photo_table_grid');
