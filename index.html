@@ -26,7 +26,6 @@
         .checkbox-group { display: flex; gap: 12px; margin-top: 5px; flex-wrap: wrap; background: #fff; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         .checkbox-group label { display: flex; align-items: center; gap: 4px; font-weight: normal; font-size: 0.95rem; cursor: pointer; margin-bottom: 0; }
         
-        /* 擴大後的手寫大空間排版 */
         .hw-large-zone { margin-top: 8px; }
         .hw-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
         .hw-title { font-size: 0.85rem; font-weight: bold; color: #444; }
@@ -34,7 +33,6 @@
         canvas.hw-canvas { width: 100%; height: 110px; display: block; touch-action: none; }
         .btn-clear-line { background: #6c757d; color: white; border: none; padding: 3px 10px; font-size: 0.75rem; border-radius: 3px; cursor: pointer; }
         
-        /* 快捷結果點選按鈕 */
         .result-btn-group { display: flex; gap: 10px; margin-top: 8px; }
         .res-btn { flex: 1; padding: 8px 0; border: 1px solid #ccc; background: #fff; border-radius: 4px; font-size: 0.95rem; font-weight: bold; cursor: pointer; text-align: center; }
         .res-btn.active-ok { background: #e2f0d9; border-color: #385723; color: #385723; box-shadow: inset 0 0 4px rgba(0,0,0,0.15); }
@@ -48,7 +46,7 @@
         
         #word-print-layout { display: none; }
 
-        /* ==================== 2. PDF Word 完美還原排版樣式 (A4 寬度與字體高度優化) ==================== */
+        /* ==================== 2. PDF Word 完美還原排版樣式 ==================== */
         @media print {
             body { background: #fff; padding: 0; margin: 0; color: #000; font-family: "標楷體", "PMingLiU", "SimSun", serif; }
             .container { display: none !important; }
@@ -57,27 +55,25 @@
             .print-title { text-align: center; font-size: 18pt; font-weight: bold; margin-bottom: 15px; letter-spacing: 1px; }
             .print-no { text-align: right; font-size: 11pt; font-weight: bold; margin-bottom: 5px; font-family: "Arial", sans-serif; }
             
-            /* 完美還原 Word 表格線條與佈局 */
-            table.word-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; border: 1.5pt solid #000; }
+            table.word-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; border: 1.5pt solid #000; }
             table.word-table th, table.word-table td { border: 1px solid #000; padding: 7px 8px; font-size: 10.5pt; text-align: left; vertical-align: middle; word-wrap: break-word; line-height: 1.4; }
             
             .text-center { text-align: center !important; }
             .text-bold { font-weight: bold; }
-            .bg-gray { background-color: #ffffff !important; } /* 配合監造實務，列印維持清晰白底黑線 */
+            .bg-gray { background-color: #ffffff !important; }
             
-            /* 手寫字體圖片縮放壓入格子中 */
             .print-hw-img { max-height: 42px; max-width: 98%; display: block; margin: 0 auto; object-fit: contain; }
             .print-res-text { font-size: 14pt; font-weight: bold; text-align: center; display: block; font-family: "Arial", "標楷體"; }
             
-            /* 底部 Word 簽章欄對齊線 */
-            .sig-row { display: flex; justify-content: space-between; margin-top: 25px; font-size: 11pt; font-weight: bold; padding: 0 5px; }
-            .sig-box-print { width: 220px; border-bottom: 1px solid #000; height: 40px; display: inline-block; vertical-align: bottom; position: relative; }
-            .sig-img-print { max-height: 38px; max-width: 90%; display: block; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); }
+            /* 修正後的簽章欄列印排版 */
+            .sig-container { display: block; width: 100%; margin-top: 30px; }
+            .sig-row { display: flex; justify-content: space-between; font-size: 11pt; font-weight: bold; }
+            .sig-item { display: flex; align-items: flex-end; }
+            .sig-box-print { width: 180px; border-bottom: 1px solid #000; height: 35px; display: inline-block; margin-left: 5px; }
             
             .page-break { page-break-before: always; }
             .photo-report-title { font-size: 16pt; font-weight: bold; margin: 20px 0 15px 0; text-align: center; letter-spacing: 1px; }
             
-            /* 照片附加頁表格 */
             .photo-grid-table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1.5pt solid #000; }
             .photo-grid-table td { border: 1px solid #000; padding: 10px; vertical-align: top; width: 50%; height: 280px; font-size: 10.5pt; line-height: 1.5; }
             .print-photo-img { width: 100%; max-height: 195px; object-fit: contain; display: block; margin: 6px auto; border: 1px solid #ccc; }
@@ -87,7 +83,7 @@
 <body>
 
 <div class="container">
-    <h2>行動填報面板 (完美相容 Word 格式)</h2>
+    <h2>行動填報面板 (修復簽名欄版面)</h2>
     
     <div class="quick-load-panel">
         <p style="margin:0 0 8px 0; font-size:0.9rem; color:#666;">系統偵測到您有 2026-06-04 的預填 JSON 紀錄檔：</p>
@@ -104,7 +100,7 @@
         <div class="form-group"><label>抽查位置：</label><input type="text" id="ui_location" value="神龍路347巷B0K+005~130 (人行道底板)"></div>
         <div class="form-group"><label>抽查日期：</label><input type="date" id="ui_date" value="2026-06-04"></div>
         <div class="form-group">
-            <label>施工流程選項 (Word 核取方塊)：</label>
+            <label>施工流程選項：</label>
             <div class="checkbox-group">
                 <label><input type="checkbox" id="ui_flow_b"> 施工前</label>
                 <label><input type="checkbox" id="ui_flow_d" checked> 施工中抽查</label>
@@ -113,16 +109,16 @@
         </div>
     </div>
 
-    <div class="section-title">施工現場查驗（大空間手寫或文字修改）</div>
+    <div class="section-title">施工現場查驗項目</div>
     
     <div class="card" id="card_item1">
         <div class="card-title">1. 進場堆置及完成加工之堆置 (施工前)</div>
         <label>抽查標準：</label>
         <textarea id="ui_std_1">進場鋼筋必須墊高至少10cm以上，防止鋼筋污染及銹蝕。</textarea>
-        <label>實際抽查情形文字描述 (若不手寫可直接打字)：</label>
-        <input type="text" id="ui_txt_1" placeholder="無手寫時，此處文字會直接印出">
+        <label>實際抽查情形文字描述：</label>
+        <input type="text" id="ui_txt_1">
         <div class="hw-large-zone">
-            <div class="hw-title-row"><span class="hw-title">✍️ 或现场手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v1')">擦除</button></div>
+            <div class="hw-title-row"><span class="hw-title">✍️ 現場手寫區：</span><button type="button" class="btn-clear-line" onclick="clearCanvas('can_v1')">擦除</button></div>
             <div class="canvas-container"><canvas id="can_v1" class="hw-canvas"></canvas></div>
         </div>
         <div class="result-btn-group">
@@ -279,11 +275,6 @@
             <input type="file" accept="image/*" onchange="previewImage(this, 'p_img_patch1')">
             <img id="p_img_patch1" class="photo-preview">
         </div>
-        <div class="photo-upload" style="margin-top:5px;">
-            <label>📷 檢附照片：開口補強照片 2</label>
-            <input type="file" accept="image/*" onchange="previewImage(this, 'p_img_patch2')">
-            <img id="p_img_patch2" class="photo-preview">
-        </div>
     </div>
 
     <div class="card" id="card_item9">
@@ -320,7 +311,7 @@
         </div>
     </div>
 
-    <div class="section-title">缺失複查與簽章設定</div>
+    <div class="section-title">缺失複查設定</div>
     <div class="card">
         <div class="checkbox-group" style="border:none; padding:0;">
             <label><input type="checkbox" id="ui_rev_done"> ☑ 已完成改善（抽附改善前中後照片）</label>
@@ -471,9 +462,11 @@
         </tr>
     </table>
 
-    <div class="sig-row">
-        <div>監造工地負責(授權)人：<div class="sig-box-print" id="p_sig2_area"></div></div>
-        <div>監造現場人員簽名：<div class="sig-box-print" id="p_sig1_area"></div></div>
+    <div class="sig-container">
+        <div class="sig-row">
+            <div class="sig-item">監造工地負責(授權)人：<div class="sig-box-print"></div></div>
+            <div class="sig-item">監造現場人員簽名：<div class="sig-box-print"></div></div>
+        </div>
     </div>
 
     <div id="print-photo-section" class="page-break">
@@ -483,47 +476,21 @@
 </div>
 
 <script>
-    const appData = {
-        photos: {},
-        canvasData: {},
-        results: {}
-    };
-
+    const appData = { photos: {}, canvasData: {}, results: {} };
     const itemKeys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 
-    // ⚡ 核心功能：帶入歷史 JSON 數據文字，免現場重複打字
     function loadJSONData() {
-        document.getElementById('ui_txt_1').value = ""; 
-        setResultByValue(1, '／');
-        
-        document.getElementById('ui_txt_2').value = "主筋 D13，副筋 D13"; 
-        setResultByValue(2, '◯');
-        
-        document.getElementById('ui_txt_3').value = "主筋 74cm內 6支(平均14.8cm)；副筋 59cm內 5支(平均14.8cm)"; 
-        setResultByValue(3, '◯');
-        
-        document.getElementById('ui_txt_4').value = "鐵絲紮實牢固，無鬆脫現象"; 
-        setResultByValue(4, '◯');
-        
-        document.getElementById('ui_txt_5').value = "現場量測 5.1 cm"; 
-        setResultByValue(5, '◯');
-        
-        document.getElementById('ui_txt_6').value = "墊塊間距 75cm"; 
-        setResultByValue(6, '◯');
-        
-        document.getElementById('ui_txt_7').value = "D13搭接長度符合規範"; 
-        setResultByValue(7, '◯');
-        
-        document.getElementById('ui_txt_8').value = "側溝蓋開口四角已綁紮補強筋"; 
-        setResultByValue(8, '◯');
-        
-        document.getElementById('ui_txt_9').value = ""; 
-        setResultByValue(9, '／');
-        
-        document.getElementById('ui_txt_10').value = ""; 
-        setResultByValue(10, '／');
-        
-        alert('已成功自動填入歷史 JSON 抽查數值！如有手寫，手寫圖片會優先覆蓋文字。');
+        document.getElementById('ui_txt_1').value = ""; setResultByValue(1, '／');
+        document.getElementById('ui_txt_2').value = "主筋 D13，副筋 D13"; setResultByValue(2, '◯');
+        document.getElementById('ui_txt_3').value = "主筋 74cm內 6支(平均14.8cm)；副筋 59cm內 5支(平均14.8cm)"; setResultByValue(3, '◯');
+        document.getElementById('ui_txt_4').value = "鐵絲紮實牢固，無鬆脫現象"; setResultByValue(4, '◯');
+        document.getElementById('ui_txt_5').value = "現場量測 5.1 cm"; setResultByValue(5, '◯');
+        document.getElementById('ui_txt_6').value = "墊塊間距 75cm"; setResultByValue(6, '◯');
+        document.getElementById('ui_txt_7').value = "D13搭接長度符合規範"; setResultByValue(7, '◯');
+        document.getElementById('ui_txt_8').value = "側溝蓋開口四角已綁紮補強筋"; setResultByValue(8, '◯');
+        document.getElementById('ui_txt_9').value = ""; setResultByValue(9, '／');
+        document.getElementById('ui_txt_10').value = ""; setResultByValue(10, '／');
+        alert('已成功自動填入歷史 JSON 抽查數值！');
     }
 
     function setResultByValue(itemIndex, val) {
@@ -609,15 +576,13 @@
             document.getElementById('p_flow_a').innerText = document.getElementById('ui_flow_a').checked ? '☑' : '□';
 
             document.getElementById('p_rev_done').innerText = document.getElementById('ui_rev_done').checked ? '☑' : '□';
-            document.getElementById('p_rev_track').innerText = document.getElementById('ui_rev_track').checked ? '□' : '□';
+            document.getElementById('p_rev_track').innerText = document.getElementById('ui_rev_track').checked ? '☑' : '□';
             document.getElementById('pt_rev_date').innerText = document.getElementById('ui_rev_date').value;
 
-            // 同步標準與實際結果
             itemKeys.forEach(k => {
                 document.getElementById('pt_std_' + k).innerText = document.getElementById('ui_std_' + k).value;
                 document.getElementById('pt_r' + k + '_val').innerText = appData.results[k] || "";
                 
-                // 處理實際情形欄位：手寫板優先，無手寫則填入打字文字
                 const box = document.getElementById('pt_v' + k + '_box'); 
                 box.innerHTML = "";
                 
@@ -631,12 +596,11 @@
                 }
             });
 
-            // 處理工程照片附加頁面
+            // 照片頁面渲染
             const photoConfig = [
                 { key: 'p_img_main', name: '鋼筋工程 (主筋間距)' }, { key: 'p_img_sub', name: '鋼筋工程 (副筋間距)' },
                 { key: 'p_img_layer', name: '鋼筋工程 (保護層量測)' }, { key: 'p_img_block', name: '鋼筋工程 (墊塊配置間距)' },
-                { key: 'p_img_splice', name: '鋼筋工程 (搭接長度)' }, { key: 'p_img_patch1', name: '鋼筋工程 (開口補強照片 1)' },
-                { key: 'p_img_patch2', name: '鋼筋工程 (開口補強照片 2)' }
+                { key: 'p_img_splice', name: '鋼筋工程 (搭接長度)' }, { key: 'p_img_patch1', name: '鋼筋工程 (開口補強照片 1)' }
             ];
             const activePhotos = photoConfig.filter(p => appData.photos[p.key]);
             const photoSection = document.getElementById('print-photo-section');
@@ -673,7 +637,7 @@
 
             setTimeout(() => { window.print(); }, 250);
         } catch (error) {
-            alert('列印轉換錯誤: ' + error.message);
+            alert('轉換錯誤: ' + error.message);
         }
     }
 </script>
