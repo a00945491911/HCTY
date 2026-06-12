@@ -55,7 +55,7 @@
             .print-res-text { font-size: 14pt; font-weight: bold; text-align: center; display: block; }
             
             /* 底部正式雙簽章區樣式修正 */
-            .sig-container { display: block; width: 100%; margin-top: 40px; }
+            .sig-container { display: block !important; width: 100%; margin-top: 40px; }
             .sig-row { display: flex; justify-content: space-between; font-size: 11pt; font-weight: bold; }
             .sig-item { display: flex; align-items: flex-end; }
             .sig-box-print { width: 200px; border-bottom: 1px solid #000; height: 35px; display: inline-block; margin-left: 5px; }
@@ -70,8 +70,9 @@
 </head>
 <body>
 
+<!-- 一、手機現場操作介面 -->
 <div class="container">
-    <h2>行動填報面板 (完整修正版)</h2>
+    <h2>行動填報面板 (完整修復版)</h2>
     
     <div class="quick-load-panel">
         <p style="margin:0 0 8px 0; font-size:0.9rem; color:#666;">系統偵測到預填 JSON 紀錄檔：</p>
@@ -114,6 +115,7 @@
 </div>
 
 
+<!-- 二、PDF Word 完美還原排版樣式 -->
 <div id="word-print-layout">
     <div class="print-title">表 7.3.1 鋼筋工程抽查紀錄表</div>
     <div class="print-no">編號：EA-<span id="lbl_print_no">1150604 - 01</span></div>
@@ -179,6 +181,7 @@
         </tr>
     </table>
 
+    <!-- 正式雙簽章區（100% 確保渲染） -->
     <div class="sig-container">
         <div class="sig-row">
             <div class="sig-item">監造工地負責(授權)人：<div class="sig-box-print"></div></div>
@@ -186,6 +189,7 @@
         </div>
     </div>
 
+    <!-- 照片紀錄頁 -->
     <div id="print-photo-section" class="page-break">
         <div class="photo-report-title">鋼筋工程 現場抽查照片紀錄表</div>
         <table class="photo-grid-table" id="photo_table_grid"></table>
@@ -193,23 +197,21 @@
 </div>
 
 <script>
-    // 項目數據定義
     const itemsConfig = [
         { k: "1", stage: "施工前", title: "進場堆置及完成加工之堆置", std: "進場鋼筋必須墊高至少10cm以上，防止鋼筋污染及銹蝕。" },
         { k: "2", stage: "施工中", title: "鋼筋號數", std: "D10、D13、D16" },
         { k: "3", stage: "施工中", title: "鋼筋間距", std: "D____@____cm，D____-____支(依設計圖說)，(各間距允差值：最小間距-6mm)", hasPhoto: true, pId: "p_img_main", pName: "主筋間距照片" },
-        { k: "4", stage: "施工中", title: "鋼筋綁紮", std: "以鐵絲加固，□逐步綁紮(鋼筋間隔≧20cm)，□跳步綁紮(鋼筋間隔<20cm)，鋼筋綁紮是否牢固無脫落" },
+        { k: "4", stage: "施工中", title: "鋼筋綁紮", std: "以鐵絲加固，□逐步綁紮(鋼筋間隔Layout)，□跳步綁紮(鋼筋間隔特殊)，鋼筋綁紮是否牢固無脫落" },
         { k: "5", stage: "施工中", title: "保護層", std: "□一般為5cm+0.6cm，□與土壤及水接觸者為7.5cm+0.6cm", hasPhoto: true, pId: "p_img_layer", pName: "保護層量測照片" },
-        { k: "6", stage: "施工中", title: "鋼筋墊塊", std: "鋼筋墊塊：D10鋼筋≦60cm，D13鋼筋≦80cm，D16鋼筋≦100cm，水泥砂漿墊塊之強度須大於所澆置混凝土之強度。", hasPhoto: true, pId: "p_img_block", pName: "鋼筋墊塊配置照片" },
+        { k: "6", stage: "施工中", title: "鋼筋墊塊", std: "鋼筋墊塊表標準限制：D10鋼筋≦60cm，D13鋼筋≦80cm，D16鋼筋≦100cm。", hasPhoto: true, pId: "p_img_block", pName: "鋼筋墊塊配置照片" },
         { k: "7", stage: "施工中", title: "搭接長度", std: "D10搭接≧40cm，D13搭接≧52cm，D16搭接≧64cm，同一搭接斷面鋼筋量不得超過1/2", hasPhoto: true, pId: "p_img_splice", pName: "搭接長度量測照片" },
-        { k: "8", stage: "施工中/後", title: "開口補強筋", std: "2-D13 L=(依設計圖說)，側溝蓋兩側(平行道路)，2-D13 L=(依設計圖說)m，側溝蓋兩側(垂直道路)，2-D13 L=(依設計圖說)設置角落四邊", hasPhoto: true, pId: "p_img_patch", pName: "開口補強照片" },
+        { k: "8", stage: "施工中/後", title: "開口補強筋", std: "2-D13 L=側溝蓋兩側、平行/垂直道路設置角落四邊補強", hasPhoto: true, pId: "p_img_patch", pName: "開口補強照片" },
         { k: "9", stage: "施工後", title: "平直度", std: "有無水平移位或垂直變形" },
         { k: "10", stage: "施工後", title: "鋼筋表面處理", std: "無銹蝕、油污、水泥漿等雜物" }
     ];
 
     const appData = { photos: {}, canvasData: {}, results: {} };
 
-    // 初始化：動態建立 UI 填報面板與列印底層
     window.onload = function() {
         const uiContainer = document.getElementById('ui-items-container');
         const printBody = document.getElementById('print-table-body');
@@ -218,7 +220,6 @@
         let printHtml = "";
         
         itemsConfig.forEach((item, index) => {
-            // 建立操作面板
             uiHtml += `
             <div class="card">
                 <div class="card-title">${item.k}. ${item.title} (${item.stage})</div>
@@ -235,32 +236,30 @@
                     <button type="button" class="res-btn" id="btn_r${item.k}_2" onclick="setResult(${item.k}, '╳', this)">╳ 缺失</button>
                     <button type="button" class="res-btn" id="btn_r${item.k}_3" onclick="setResult(${item.k}, '／', this)">／ 無此項</button>
                 </div>
-                ${item.hasPhoto ? `
+                \${item.hasPhoto ? `
                 <div class="photo-upload">
-                    <label>📷 檢附照片：${item.pName}</label>
-                    <input type="file" accept="image/*" onchange="previewImage(this, '${item.pId}')">
-                    <img id="${item.pId}" class="photo-preview">
+                    <label>📷 檢附照片：\${item.pName}</label>
+                    <input type="file" accept="image/*" onchange="previewImage(this, '\${item.pId}')">
+                    <img id="\${item.pId}" class="photo-preview">
                 </div>` : ''}
             </div>`;
 
-            // 建立 Word 還原表格行 (完美對齊)
             printHtml += `
             <tr>
-                ${index === 0 ? `<td class="text-center text-bold" style="font-size:11pt;">施工前</td>` : ''}
-                ${index === 1 ? `<td class="text-center text-bold" rowspan="6" style="font-size:11pt;">施工中</td>` : ''}
-                ${index === 7 ? `<td class="text-center text-bold" style="font-size:11pt;">施工中/後</td>` : ''}
-                ${index === 8 ? `<td class="text-center text-bold" rowspan="2" style="font-size:11pt;">施工後</td>` : ''}
-                <td>${item.title}</td>
-                <td id="pt_std_${item.k}"></td>
-                <td id="pt_v${item.k}_box"></td>
-                <td class="text-center"><span id="pt_r${item.k}_val" class="print-res-text"></span></td>
+                \${index === 0 ? `<td class="text-center text-bold" style="font-size:11pt;">施工前</td>` : ''}
+                \${index === 1 ? `<td class="text-center text-bold" rowspan="6" style="font-size:11pt;">施工中</td>` : ''}
+                \${index === 7 ? `<td class="text-center text-bold" style="font-size:11pt;">施工中/後</td>` : ''}
+                \${index === 8 ? `<td class="text-center text-bold" rowspan="2" style="font-size:11pt;">施工後</td>` : ''}
+                <td>\${item.title}</td>
+                <td id="pt_std_\${item.k}"></td>
+                <td id="pt_v\${item.k}_box"></td>
+                <td class="text-center"><span id="pt_r\${item.k}_val" class="print-res-text"></span></td>
             </tr>`;
         });
         
         uiContainer.innerHTML = uiHtml;
         printBody.innerHTML = printHtml;
         
-        // 綁定手寫畫布事件
         itemsConfig.forEach(item => setupCanvas('can_v' + item.k));
     };
 
@@ -280,7 +279,7 @@
 
     function setResultByValue(itemIndex, val) {
         let btnIdx = (val === '◯') ? 1 : (val === '╳' ? 2 : 3);
-        let targetBtn = document.getElementById(`btn_r${itemIndex}_${btnIdx}`);
+        let targetBtn = document.getElementById(`btn_r\${itemIndex}_\${btnIdx}`);
         if(targetBtn) setResult(itemIndex, val, targetBtn);
     }
 
@@ -338,7 +337,6 @@
         }
     }
 
-    // 🖨️ 核心列印轉換：完美將打字或手寫推入 Word 結構
     function generateWordPDF() {
         try {
             document.getElementById('lbl_print_no').innerText = document.getElementById('ui_no').value;
@@ -348,7 +346,7 @@
             const dateVal = document.getElementById('ui_date').value;
             if(dateVal) {
                 const parts = dateVal.split('-');
-                document.getElementById('td_date').innerText = `${parseInt(parts[0]) - 1911} 年 ${parts[1]} 月 ${parts[2]} 日`;
+                document.getElementById('td_date').innerText = `\${parseInt(parts[0]) - 1911} 年 \${parts[1]} 月 \${parts[2]} 日`;
             }
 
             document.getElementById('p_flow_b').innerText = document.getElementById('ui_flow_b').checked ? '☑' : '□';
@@ -359,7 +357,6 @@
             document.getElementById('p_rev_track').innerText = document.getElementById('ui_rev_track').checked ? '☑' : '□';
             document.getElementById('pt_rev_date').innerText = document.getElementById('ui_rev_date').value;
 
-            // 同步查驗細項
             itemsConfig.forEach(item => {
                 document.getElementById('pt_std_' + item.k).innerText = document.getElementById('ui_std_' + item.k).value;
                 document.getElementById('pt_r' + item.k + '_val').innerText = appData.results[item.k] || "";
@@ -377,7 +374,6 @@
                 }
             });
 
-            // 處理照片附加頁面
             const activePhotos = itemsConfig.filter(item => item.hasPhoto && appData.photos[item.pId]);
             const photoSection = document.getElementById('print-photo-section');
             const gridTable = document.getElementById('photo_table_grid');
@@ -391,17 +387,17 @@
                 for(let i = 0; i < activePhotos.length; i += 2) {
                     htmlBuffer += "<tr>";
                     htmlBuffer += `<td>
-                        <strong>施工位置：</strong><span>${document.getElementById('ui_location').value}</span><br>
-                        <strong>工程項目：</strong>${activePhotos[i].pName}<br>
-                        <img src="${appData.photos[activePhotos[i].pId]}" class="print-photo-img">
-                        <strong>拍照日期：</strong><span>${dateVal ? dateVal.replace(/-/g, '.') : ''}</span>
+                        <strong>施工位置：</strong><span>\${document.getElementById('ui_location').value}</span><br>
+                        <strong>工程項目：</strong>\${activePhotos[i].pName}<br>
+                        <img src="\${appData.photos[activePhotos[i].pId]}" class="print-photo-img">
+                        <strong>拍照日期：</strong><span>\${dateVal ? dateVal.replace(/-/g, '.') : ''}</span>
                     </td>`;
                     if(i + 1 < activePhotos.length) {
                         htmlBuffer += `<td>
-                            <strong>施工位置：</strong><span>${document.getElementById('ui_location').value}</span><br>
-                            <strong>工程項目：</strong>${activePhotos[i+1].pName}<br>
-                            <img src="${appData.photos[activePhotos[i+1].pId]}" class="print-photo-img">
-                            <strong>拍照日期：</strong><span>${dateVal ? dateVal.replace(/-/g, '.') : ''}</span>
+                            <strong>施工位置：</strong><span>\${document.getElementById('ui_location').value}</span><br>
+                            <strong>工程項目：</strong>\${activePhotos[i+1].pName}<br>
+                            <img src="\${appData.photos[activePhotos[i+1].pId]}" class="print-photo-img">
+                            <strong>拍照日期：</strong><span>\${dateVal ? dateVal.replace(/-/g, '.') : ''}</span>
                         </td>`;
                     } else {
                         htmlBuffer += "<td></td>";
@@ -411,7 +407,6 @@
                 gridTable.innerHTML = htmlBuffer;
             }
 
-            // 觸發系統列印
             setTimeout(() => { window.print(); }, 250);
         } catch (error) {
             alert('轉換列印錯誤: ' + error.message);
